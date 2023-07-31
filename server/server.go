@@ -5,36 +5,71 @@ import (
 	"fmt"
 	"net"
 	"os"
+
+	"github.com/panupakm/mini-redis/lib/payload"
+	"github.com/panupakm/mini-redis/lib/ping"
 )
 
-func Start(network, host, port string) {
-	server, err := net.Listen(network, fmt.Sprintf("%s:%s", host, port))
+const (
+	Protocal = "tcp"
+)
+
+type Server struct {
+	host, port string
+	conn       net.Conn
+	listener   net.Listener
+}
+
+func NewServer(host, port string) *Server {
+	return &Server{
+		host: host,
+		port: port,
+	}
+}
+
+func (s *Server) Close() error {
+	return s.listener.Close()
+}
+
+func (s *Server) Start() {
+	listener, err := net.Listen(Protocal, fmt.Sprintf("%s:%s", s.host, s.port))
+	s.listener = listener
 	if err != nil {
 		fmt.Println("Error listening:", err.Error())
 		os.Exit(1)
 	}
-	defer server.Close()
 
-	fmt.Printf(("Listening on %s:%s\n"), host, port)
+	fmt.Printf(("Listening on %s:%s\n"), s.host, s.port)
 	fmt.Println("Waiting for client...")
 
 	for {
-		connection, err := server.Accept()
+		connection, err := s.listener.Accept()
 		if err != nil {
+			fmt.Println("Error accepting:", err.Error())
+			continue
 		}
 		fmt.Println("client connected")
-		go processClient(connection)
+		go s.processClient(connection)
 	}
 }
 
-func processClient(connection net.Conn) {
-	buffer := make([]byte, 1024)
-	mLen, err := connection.Read(buffer)
-	if err != nil {
-		fmt.Println("Error reading:", err.Error())
+func (s *Server) processClient(conn net.Conn) {
+	var cmdstr payload.String
+	cmdstr.ReaderFrom(conn)
+	fmt.Println("Command:", cmdstr)
+	switch cmdstr {
+	case ping.Code:
+		s.handlePing(conn)
 	}
+}
 
-	fmt.Printf("Received: %s", string(buffer[:mLen]))
-	_, err = connection.Write([]byte("Thanks! got your message: " + string(buffer[:mLen])))
-	connection.Close()
+func (s *Server) handlePing(conn net.Conn) {
+
+	msg := ping.NewPing(conn)
+
+	pong := payload.String(msg.String())
+	_, err := pong.WriterTo(conn)
+	if err != nil {
+		fmt.Println("Error writing:", err.Error())
+	}
 }

@@ -8,6 +8,6 @@ import (
 )
 
 func main() {
-	server.Start("tcp", "localhost", "9988")
+	server.NewServer("localhost", "9988")
 	fmt.Println("Server started")
 }
