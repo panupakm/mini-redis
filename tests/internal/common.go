@@ -1,16 +1,41 @@
 package common
 
 import (
+	"fmt"
 	"testing"
 
-	"github.com/panupakm/mini-redis/client"
-	"github.com/panupakm/mini-redis/server"
+	"github.com/panupakm/miniredis/internal/client"
+	"github.com/panupakm/miniredis/internal/db"
+	"github.com/panupakm/miniredis/internal/server"
 	"github.com/stretchr/testify/require"
 )
 
-func SetUpServerClient(t *testing.T) (*server.Server, *client.Client, func()) {
+func SetUpServer(t *testing.T, port string) *server.Server {
+
+	d := db.NewDb()
+
 	t.Log("Start server...")
-	s := server.NewServer("localhost", "9988")
+	s := server.NewServer("localhost", port, d)
+	go s.Start()
+
+	return s
+}
+
+func SetUpClient(t *testing.T, port string) (*client.Client, func()) {
+	c := client.NewClient()
+	err := c.Connect(fmt.Sprintf("localhost:%s", port))
+	require.NoError(t, err)
+	return c, func() {
+		c.Close()
+	}
+}
+
+func SetUpServerClient(t *testing.T) (*server.Server, *client.Client, func()) {
+
+	d := db.NewDb()
+
+	t.Log("Start server...")
+	s := server.NewServer("localhost", "9988", d)
 	go s.Start()
 
 	c := client.NewClient()

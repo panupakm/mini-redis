@@ -1,10 +1,9 @@
-package ping
+package cmd
 
 import (
-	"fmt"
 	"net"
 
-	"github.com/panupakm/mini-redis/lib/payload"
+	"github.com/panupakm/miniredis/lib/payload"
 )
 
 type Ping struct {
@@ -12,13 +11,12 @@ type Ping struct {
 }
 
 const (
-	Code = "ping"
+	PingCode = "ping"
 )
 
 func NewPing(conn net.Conn) *Ping {
 	var msg payload.String
 	msg.ReaderFrom(conn)
-	fmt.Println("Message: ", msg)
 	return &Ping{
 		message: msg.String(),
 	}

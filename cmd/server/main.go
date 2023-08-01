@@ -1,13 +1,15 @@
-// mini-redis project server main.go
+// miniredis project server main.go
 package main
 
 import (
 	"fmt"
 
-	"github.com/panupakm/mini-redis/server"
+	"github.com/panupakm/miniredis/internal/db"
+	"github.com/panupakm/miniredis/internal/server"
 )
 
 func main() {
-	server.NewServer("localhost", "9988")
+	s := server.NewServer("localhost", "9988", db.NewDb())
 	fmt.Println("Server started")
+	s.Start()
 }

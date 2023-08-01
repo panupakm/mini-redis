@@ -1,4 +1,4 @@
-module github.com/panupakm/mini-redis
+module github.com/panupakm/miniredis
 
 go 1.19
 
