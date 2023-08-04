@@ -12,6 +12,7 @@ const (
 	BinaryType ValueType = iota + 1
 	StringType
 	ResultType
+	NestedType
 
 	MaxPayloadSize uint32 = 10 << 20
 )

@@ -6,6 +6,7 @@ import (
 
 	"github.com/panupakm/miniredis/internal/client"
 	"github.com/panupakm/miniredis/internal/db"
+	"github.com/panupakm/miniredis/internal/pubsub"
 	"github.com/panupakm/miniredis/internal/server"
 	"github.com/stretchr/testify/require"
 )
@@ -13,9 +14,10 @@ import (
 func SetUpServer(t *testing.T, port string) *server.Server {
 
 	d := db.NewDb()
+	ps := pubsub.NewPubSub()
 
 	t.Log("Start server...")
-	s := server.NewServer("localhost", port, d)
+	s := server.NewServer("localhost", port, d, ps)
 	go s.Start()
 
 	return s
@@ -33,9 +35,10 @@ func SetUpClient(t *testing.T, port string) (*client.Client, func()) {
 func SetUpServerClient(t *testing.T) (*server.Server, *client.Client, func()) {
 
 	d := db.NewDb()
+	ps := pubsub.NewPubSub()
 
 	t.Log("Start server...")
-	s := server.NewServer("localhost", "9988", d)
+	s := server.NewServer("localhost", "9988", d, ps)
 	go s.Start()
 
 	c := client.NewClient()

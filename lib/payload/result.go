@@ -46,7 +46,7 @@ func (r Result) String() string {
 	return fmt.Sprintf("code:%v length:%v type:%v", r.Code, r.Length, r.Typ)
 }
 
-func (r Result) WriterTo(w io.Writer) (int64, error) {
+func (r Result) WriteTo(w io.Writer) (int64, error) {
 	err := binary.Write(w, binary.BigEndian, ResultType)
 	if err != nil {
 		return 0, err
@@ -64,7 +64,7 @@ func (r Result) WriterTo(w io.Writer) (int64, error) {
 	return n + int64(o), err
 }
 
-func (rs *Result) ReaderFrom(r io.Reader) (int64, error) {
+func (rs *Result) ReadFrom(r io.Reader) (int64, error) {
 	var typ ValueType
 	err := binary.Read(r, binary.BigEndian, &typ)
 	if err != nil {

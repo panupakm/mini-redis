@@ -14,9 +14,9 @@ const (
 	PingCode = "ping"
 )
 
-func NewPing(conn net.Conn) *Ping {
+func PingReadFrom(conn net.Conn) *Ping {
 	var msg payload.String
-	msg.ReaderFrom(conn)
+	msg.ReadFrom(conn)
 	return &Ping{
 		message: msg.String(),
 	}

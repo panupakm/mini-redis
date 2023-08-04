@@ -27,6 +27,6 @@ func HandleSet(conn net.Conn, ctx *miniredis.Context) error {
 	}
 
 	r := payload.NewResult(payload.StringType, []byte("OK"))
-	_, err = r.WriterTo(conn)
+	_, err = r.WriteTo(conn)
 	return err
 }

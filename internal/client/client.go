@@ -45,14 +45,38 @@ func (c *Client) Ping(msg string) (chan ResultChannel, error) {
 	ch := make(chan ResultChannel)
 	pl := payload.String(cmd.PingCode)
 	var n int64 = 0
-	o, err := pl.WriterTo(c.conn)
+	o, err := pl.WriteTo(c.conn)
 	n += o
 	if err != nil {
 		return nil, err
 	}
 
 	pl = payload.String(msg)
-	o, err = pl.WriterTo(c.conn)
+	o, err = pl.WriteTo(c.conn)
+	if err != nil {
+		return nil, err
+	}
+
+	go func() {
+		r, err := c.ReadResult()
+		ch <- ResultChannel{Str: string(r.Buffer), Err: err}
+	}()
+
+	return ch, nil
+}
+
+func (c *Client) Sub(topic string) (chan ResultChannel, error) {
+	ch := make(chan ResultChannel)
+	pl := payload.String(cmd.SubCode)
+	var n int64 = 0
+	o, err := pl.WriteTo(c.conn)
+	n += o
+	if err != nil {
+		return nil, err
+	}
+
+	pl = payload.String(topic)
+	o, err = pl.WriteTo(c.conn)
 	if err != nil {
 		return nil, err
 	}
@@ -67,14 +91,14 @@ func (c *Client) Ping(msg string) (chan ResultChannel, error) {
 
 func (c *Client) SetString(key string, value string) (chan ResultChannel, error) {
 	pl := payload.String(cmd.SetCode)
-	o, err := pl.WriterTo(c.conn)
+	o, err := pl.WriteTo(c.conn)
 	if err != nil {
 		return nil, err
 	}
 
 	var n int64 = int64(o)
 	pl = payload.String(key)
-	o, err = pl.WriterTo(c.conn)
+	o, err = pl.WriteTo(c.conn)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +106,7 @@ func (c *Client) SetString(key string, value string) (chan ResultChannel, error)
 	n += o
 
 	pl = payload.String(value)
-	o, err = pl.WriterTo(c.conn)
+	o, err = pl.WriteTo(c.conn)
 	if err != nil {
 		return nil, err
 	}
@@ -97,13 +121,40 @@ func (c *Client) SetString(key string, value string) (chan ResultChannel, error)
 
 func (c *Client) Get(key string) (chan ResultChannel, error) {
 	pl := payload.String(cmd.GetCode)
-	_, err := pl.WriterTo(c.conn)
+	_, err := pl.WriteTo(c.conn)
 	if err != nil {
 		return nil, err
 	}
 
 	pl = payload.String(key)
-	_, err = pl.WriterTo(c.conn)
+	_, err = pl.WriteTo(c.conn)
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan ResultChannel)
+	go func() {
+		r, err := c.ReadResult()
+		ch <- ResultChannel{Result: r, Err: err}
+	}()
+	return ch, nil
+}
+
+func (c *Client) PubString(topic string, msg string) (chan ResultChannel, error) {
+	pl := payload.String(cmd.PubCode)
+	_, err := pl.WriteTo(c.conn)
+	if err != nil {
+		return nil, err
+	}
+
+	pl = payload.String(topic)
+	_, err = pl.WriteTo(c.conn)
+	if err != nil {
+		return nil, err
+	}
+
+	pl = payload.String(msg)
+	_, err = pl.WriteTo(c.conn)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +169,7 @@ func (c *Client) Get(key string) (chan ResultChannel, error) {
 
 func (c *Client) ReadResult() (*payload.Result, error) {
 	var result payload.Result
-	_, err := result.ReaderFrom(c.conn)
+	_, err := result.ReadFrom(c.conn)
 	if err != nil {
 		return nil, err
 	}

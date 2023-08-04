@@ -16,7 +16,7 @@ func (s String) String() string {
 	return string(s)
 }
 
-func (s String) WriterTo(w io.Writer) (int64, error) {
+func (s String) WriteTo(w io.Writer) (int64, error) {
 	err := binary.Write(w, binary.BigEndian, StringType)
 	if err != nil {
 		return 0, err
@@ -32,7 +32,7 @@ func (s String) WriterTo(w io.Writer) (int64, error) {
 	return n + int64(o), err
 }
 
-func (s *String) ReaderFrom(r io.Reader) (int64, error) {
+func (s *String) ReadFrom(r io.Reader) (int64, error) {
 	var typ ValueType
 	err := binary.Read(r, binary.BigEndian, &typ)
 	if err != nil {

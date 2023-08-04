@@ -9,6 +9,7 @@ import (
 
 	"github.com/panupakm/miniredis"
 	"github.com/panupakm/miniredis/internal/db"
+	"github.com/panupakm/miniredis/internal/pubsub"
 	"github.com/panupakm/miniredis/internal/server/handler"
 	"github.com/panupakm/miniredis/lib/cmd"
 	"github.com/panupakm/miniredis/lib/payload"
@@ -23,13 +24,15 @@ type Server struct {
 	conn       net.Conn
 	listener   net.Listener
 	db         *db.Db
+	ps         *pubsub.PubSub
 }
 
-func NewServer(host, port string, db *db.Db) *Server {
+func NewServer(host, port string, db *db.Db, ps *pubsub.PubSub) *Server {
 	return &Server{
 		host: host,
 		port: port,
 		db:   db,
+		ps:   ps,
 	}
 }
 
@@ -55,16 +58,15 @@ func (s *Server) Start() {
 			continue
 		}
 		fmt.Println("client connected")
-		go s.processClient(connection, miniredis.NewContext(s.db))
+		go s.processClient(connection, miniredis.NewContext(s.db, s.ps))
 	}
 }
 
-// TODO: handle close connections
 func (s *Server) processClient(conn net.Conn, ctx *miniredis.Context) {
 
 	for {
 		var cmdstr payload.String
-		_, err := cmdstr.ReaderFrom(conn)
+		_, err := cmdstr.ReadFrom(conn)
 		if err != nil {
 			if err == io.EOF {
 				fmt.Printf("Client %s has closed connection\n", conn.RemoteAddr())
@@ -80,6 +82,10 @@ func (s *Server) processClient(conn net.Conn, ctx *miniredis.Context) {
 			handler.HandleSet(conn, ctx)
 		case cmd.GetCode:
 			handler.HandleGet(conn, ctx)
+		case cmd.SubCode:
+			handler.HandleSub(conn, ctx)
+		case cmd.PubCode:
+			handler.HandlePub(conn, ctx)
 		}
 	}
 	fmt.Println("client closed")

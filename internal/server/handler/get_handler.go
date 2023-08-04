@@ -22,11 +22,11 @@ func HandleGet(conn net.Conn, ctx *miniredis.Context) error {
 	if err != nil {
 		fmt.Println("Error set:", err.Error())
 		r := payload.NewErrResult(payload.StringType, []byte(err.Error()))
-		_, _ = r.WriterTo(conn)
+		_, _ = r.WriteTo(conn)
 		return err
 	}
 
 	r := payload.NewResult(v.Typ, v.Buf)
-	_, err = r.WriterTo(conn)
+	_, err = r.WriteTo(conn)
 	return err
 }

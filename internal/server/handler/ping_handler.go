@@ -9,10 +9,10 @@ import (
 )
 
 func HandlePing(conn net.Conn, ctx *miniredis.Context) error {
-	ping := cmd.NewPing(conn)
+	ping := cmd.PingReadFrom(conn)
 	msg := ping.String()
 	result := payload.NewResult(payload.StringType, []byte(msg))
 
-	_, err := result.WriterTo(conn)
+	_, err := result.WriteTo(conn)
 	return err
 }

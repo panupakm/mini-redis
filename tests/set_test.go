@@ -27,7 +27,7 @@ func TestSetGet(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	port := "9999"
+	port := "9989"
 	_ = common.SetUpServer(t, port)
 
 	for _, tt := range tests {

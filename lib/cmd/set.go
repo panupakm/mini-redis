@@ -19,10 +19,10 @@ const (
 
 func SetReadFrom(conn net.Conn) *Set {
 	var key payload.String
-	key.ReaderFrom(conn)
+	key.ReadFrom(conn)
 
 	var value payload.String
-	value.ReaderFrom(conn)
+	value.ReadFrom(conn)
 	return &Set{
 		Key:   key.String(),
 		Value: value.Bytes(),
