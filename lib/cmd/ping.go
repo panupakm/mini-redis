@@ -18,7 +18,7 @@ func PingReadFrom(r io.Reader) *Ping {
 	var msg payload.String
 	msg.ReadFrom(r)
 	return &Ping{
-		message: msg.String(),
+		message: string(msg),
 	}
 }
 

@@ -55,6 +55,11 @@ func (s *String) ReadFrom(r io.Reader) (int64, error) {
 		return n, ErrMaxPayloadSize
 	}
 
+	if size == 0 {
+		*s = ""
+		return n, nil
+	}
+
 	buff := make([]byte, size)
 	o, err := r.Read(buff)
 

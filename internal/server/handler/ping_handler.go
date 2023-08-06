@@ -11,6 +11,9 @@ import (
 func HandlePing(conn net.Conn, ctx *miniredis.Context) error {
 	ping := cmd.PingReadFrom(conn)
 	msg := ping.String()
+	if msg == "" {
+		msg = "pong"
+	}
 	result := payload.NewResult(payload.StringType, []byte(msg))
 
 	_, err := result.WriteTo(conn)
