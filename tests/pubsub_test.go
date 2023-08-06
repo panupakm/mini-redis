@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	common "github.com/panupakm/miniredis/tests/internal"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,11 +44,12 @@ func TestSub(t *testing.T) {
 			c, close := common.SetUpClient(t, port)
 			defer close()
 
-			ch, err := c.Sub(tt.args.topic)
+			_, await, err := c.Sub(tt.args.topic)
+			result := <-await
+			require.NoError(t, result.Err)
+			require.Equal(t, tt.args.result, string(result.Buffer))
+
 			require.NoError(t, err)
-			r := <-ch
-			require.NoError(t, r.Err)
-			assert.Equal(t, tt.args.result, r.Str)
 		})
 	}
 }
@@ -82,24 +82,39 @@ func TestPubToExistingTopic(t *testing.T) {
 	_ = common.SetUpServer(t, port)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			csub, csubclose := common.SetUpClient(t, port)
-			defer csubclose()
+			csub1, csubclose1 := common.SetUpClient(t, port)
+			defer csubclose1()
+			csub2, csubclose2 := common.SetUpClient(t, port)
+			defer csubclose2()
 
 			cpub, cpubclose := common.SetUpClient(t, port)
 			defer cpubclose()
 
-			chsub, err := csub.Sub(tt.args.topic)
+			//two clients subscribing to the same topic
+			subscriber1, await, err := csub1.Sub(tt.args.topic)
 			require.NoError(t, err)
-			rs := <-chsub
-			require.NoError(t, rs.Err)
-			require.Equal(t, tt.args.result, string(rs.Str))
+			result := <-await
+			require.NoError(t, result.Err)
+			require.Equal(t, tt.args.result, string(result.Buffer))
 
-			chpub, err := cpub.PubString(tt.args.topic, tt.args.msg)
+			subscriber2, await, err := csub2.Sub(tt.args.topic)
 			require.NoError(t, err)
-			rs = <-chpub
-			require.NoError(t, rs.Err)
-			require.Equal(t, uint16(0), rs.Code)
-			require.Equal(t, "OK", string(rs.Buffer))
+			result = <-await
+			require.NoError(t, result.Err)
+			require.Equal(t, tt.args.result, string(result.Buffer))
+
+			//publish string message
+			_, err = cpub.PubString(tt.args.topic, tt.args.msg)
+			require.NoError(t, err)
+
+			//wait for message
+			msg, _ := subscriber1.NextMessage()
+			str, _ := msg.AsString()
+			require.Equal(t, tt.args.msg, str)
+
+			msg, _ = subscriber2.NextMessage()
+			str, _ = msg.AsString()
+			require.Equal(t, tt.args.msg, str)
 		})
 	}
 }

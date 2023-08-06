@@ -28,8 +28,13 @@ func (ps *PubSub) Pub(topic string, typ payload.ValueType, buff []byte, conn net
 		if con == conn {
 			continue
 		}
+
+		msg := payload.NewSubMsg(typ, buff)
+		_, err := msg.WriteTo(con)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
-	// ps.Map[topic] = append(ps.Map[topic], conn)
 }
 
 func (ps *PubSub) UnsubConnection(conn net.Conn) {

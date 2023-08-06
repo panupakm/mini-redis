@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"net"
+	"io"
 
 	"github.com/panupakm/miniredis/lib/payload"
 )
@@ -15,9 +15,9 @@ const (
 	SubCode = "sub"
 )
 
-func SubReadFrom(conn net.Conn) *Sub {
+func SubReadFrom(r io.Reader) *Sub {
 	var topic payload.String
-	topic.ReadFrom(conn)
+	topic.ReadFrom(r)
 	return &Sub{
 		Topic: string(topic),
 	}

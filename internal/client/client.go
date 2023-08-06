@@ -65,28 +65,31 @@ func (c *Client) Ping(msg string) (chan ResultChannel, error) {
 	return ch, nil
 }
 
-func (c *Client) Sub(topic string) (chan ResultChannel, error) {
+func (c *Client) Sub(topic string) (*Subsriber, chan ResultChannel, error) {
 	ch := make(chan ResultChannel)
 	pl := payload.String(cmd.SubCode)
 	var n int64 = 0
 	o, err := pl.WriteTo(c.conn)
 	n += o
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	pl = payload.String(topic)
 	o, err = pl.WriteTo(c.conn)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	go func() {
 		r, err := c.ReadResult()
-		ch <- ResultChannel{Str: string(r.Buffer), Err: err}
+		ch <- ResultChannel{Result: r, Err: err}
 	}()
 
-	return ch, nil
+	return &Subsriber{
+		messages: make(chan payload.SubMsg),
+		conn:     c.conn,
+	}, ch, nil
 }
 
 func (c *Client) SetString(key string, value string) (chan ResultChannel, error) {

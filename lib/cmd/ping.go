@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"net"
+	"io"
 
 	"github.com/panupakm/miniredis/lib/payload"
 )
@@ -14,9 +14,9 @@ const (
 	PingCode = "ping"
 )
 
-func PingReadFrom(conn net.Conn) *Ping {
+func PingReadFrom(r io.Reader) *Ping {
 	var msg payload.String
-	msg.ReadFrom(conn)
+	msg.ReadFrom(r)
 	return &Ping{
 		message: msg.String(),
 	}

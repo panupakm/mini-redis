@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"os"
 
 	"github.com/panupakm/miniredis"
 	"github.com/panupakm/miniredis/internal/db"
@@ -40,12 +39,12 @@ func (s *Server) Close() error {
 	return s.listener.Close()
 }
 
-func (s *Server) Start() {
+func (s *Server) Start() error {
 	listener, err := net.Listen(Protocal, fmt.Sprintf("%s:%s", s.host, s.port))
 	s.listener = listener
 	if err != nil {
 		fmt.Println("Error listening:", err.Error())
-		os.Exit(1)
+		return err
 	}
 
 	fmt.Printf(("Listening on %s:%s\n"), s.host, s.port)

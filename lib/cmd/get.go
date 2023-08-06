@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"net"
+	"io"
 
 	"github.com/panupakm/miniredis/lib/payload"
 )
@@ -15,9 +15,9 @@ const (
 	GetCode = "get"
 )
 
-func GetReadFrom(conn net.Conn) *Get {
+func GetReadFrom(r io.Reader) *Get {
 	var key payload.String
-	key.ReadFrom(conn)
+	key.ReadFrom(r)
 	return &Get{
 		Key: key.String(),
 	}

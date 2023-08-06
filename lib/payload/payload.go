@@ -13,6 +13,7 @@ const (
 	StringType
 	ResultType
 	NestedType
+	SubMsgType
 
 	MaxPayloadSize uint32 = 10 << 20
 )

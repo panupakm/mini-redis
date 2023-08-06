@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"net"
+	"io"
 
 	"github.com/panupakm/miniredis/lib/payload"
 )
@@ -17,12 +17,12 @@ const (
 	SetCode = "set"
 )
 
-func SetReadFrom(conn net.Conn) *Set {
+func SetReadFrom(r io.Reader) *Set {
 	var key payload.String
-	key.ReadFrom(conn)
+	key.ReadFrom(r)
 
 	var value payload.String
-	value.ReadFrom(conn)
+	value.ReadFrom(r)
 	return &Set{
 		Key:   key.String(),
 		Value: value.Bytes(),

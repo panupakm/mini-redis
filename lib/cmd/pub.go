@@ -3,7 +3,7 @@ package cmd
 import (
 	"encoding/binary"
 	"fmt"
-	"net"
+	"io"
 
 	"github.com/panupakm/miniredis/lib/payload"
 )
@@ -19,26 +19,26 @@ const (
 	PubCode = "pub"
 )
 
-func PubReadFrom(conn net.Conn) *Pub {
+func PubReadFrom(r io.Reader) *Pub {
 	var topic payload.String
-	topic.ReadFrom(conn)
+	topic.ReadFrom(r)
 
 	var typ payload.ValueType
-	err := binary.Read(conn, binary.BigEndian, &typ)
+	err := binary.Read(r, binary.BigEndian, &typ)
 	if err != nil {
 		fmt.Printf("pub error: %s", err)
 		return nil
 	}
 
 	var len uint32
-	err = binary.Read(conn, binary.BigEndian, &len)
+	err = binary.Read(r, binary.BigEndian, &len)
 	if err != nil {
 		fmt.Printf("pub error: %s", err)
 		return nil
 	}
 
 	buff := make([]byte, len)
-	_, err = conn.Read(buff)
+	_, err = r.Read(buff)
 
 	return &Pub{
 		Topic: string(topic),
