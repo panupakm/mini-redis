@@ -3,12 +3,11 @@ package handler
 import (
 	"net"
 
-	"github.com/panupakm/miniredis"
-	"github.com/panupakm/miniredis/lib/cmd"
-	"github.com/panupakm/miniredis/lib/payload"
+	"github.com/panupakm/miniredis/payload"
+	cmd "github.com/panupakm/miniredis/request"
 )
 
-func HandlePing(conn net.Conn, ctx *miniredis.Context) error {
+func HandlePing(conn net.Conn) error {
 	ping := cmd.PingReadFrom(conn)
 	msg := ping.String()
 	if msg == "" {

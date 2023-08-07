@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/panupakm/miniredis"
 	"github.com/panupakm/miniredis/internal/db"
 	"github.com/panupakm/miniredis/internal/pubsub"
 )
@@ -97,37 +96,37 @@ func TestServer_Start(t *testing.T) {
 	}
 }
 
-func TestServer_processClient(t *testing.T) {
-	type fields struct {
-		host     string
-		port     string
-		conn     net.Conn
-		listener net.Listener
-		db       *db.Db
-		ps       *pubsub.PubSub
-	}
-	type args struct {
-		conn net.Conn
-		ctx  *miniredis.Context
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := &Server{
-				host:     tt.fields.host,
-				port:     tt.fields.port,
-				conn:     tt.fields.conn,
-				listener: tt.fields.listener,
-				db:       tt.fields.db,
-				ps:       tt.fields.ps,
-			}
-			s.processClient(tt.args.conn, tt.args.ctx)
-		})
-	}
-}
+// func TestServer_processClient(t *testing.T) {
+// 	type fields struct {
+// 		host     string
+// 		port     string
+// 		conn     net.Conn
+// 		listener net.Listener
+// 		db       *db.Db
+// 		ps       *pubsub.PubSub
+// 	}
+// 	type args struct {
+// 		conn net.Conn
+// 		ctx  *miniredis.Context
+// 	}
+// 	tests := []struct {
+// 		name   string
+// 		fields fields
+// 		args   args
+// 	}{
+// 		// TODO: Add test cases.
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			s := &Server{
+// 				host:     tt.fields.host,
+// 				port:     tt.fields.port,
+// 				conn:     tt.fields.conn,
+// 				listener: tt.fields.listener,
+// 				db:       tt.fields.db,
+// 				ps:       tt.fields.ps,
+// 			}
+// 			s.processClient(tt.args.conn, tt.args.ctx)
+// 		})
+// 	}
+// }

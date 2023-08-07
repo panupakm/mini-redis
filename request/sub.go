@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/panupakm/miniredis/lib/payload"
+	"github.com/panupakm/miniredis/payload"
 )
 
 type Sub struct {

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/panupakm/miniredis/internal/client"
+	"github.com/panupakm/miniredis/client"
 	"github.com/panupakm/miniredis/internal/db"
 	"github.com/panupakm/miniredis/internal/pubsub"
-	"github.com/panupakm/miniredis/internal/server"
+	"github.com/panupakm/miniredis/server"
 	"github.com/stretchr/testify/require"
 )
 

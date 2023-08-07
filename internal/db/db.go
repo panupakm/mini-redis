@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"github.com/panupakm/miniredis/lib/payload"
+	"github.com/panupakm/miniredis/payload"
 )
 
 type TypeBuffer struct {

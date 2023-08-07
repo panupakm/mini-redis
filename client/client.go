@@ -4,8 +4,8 @@ package client
 import (
 	"net"
 
-	"github.com/panupakm/miniredis/lib/cmd"
-	"github.com/panupakm/miniredis/lib/payload"
+	"github.com/panupakm/miniredis/payload"
+	cmd "github.com/panupakm/miniredis/request"
 )
 
 type Client struct {
@@ -99,7 +99,7 @@ func (c *Client) SetString(key string, value string) (chan ResultChannel, error)
 		return nil, err
 	}
 
-	var n int64 = int64(o)
+	var n = int64(o)
 	pl = payload.String(key)
 	o, err = pl.WriteTo(c.conn)
 	if err != nil {

@@ -6,8 +6,8 @@ import (
 
 	miniredis "github.com/panupakm/miniredis"
 	mdb "github.com/panupakm/miniredis/internal/db"
-	"github.com/panupakm/miniredis/lib/cmd"
-	"github.com/panupakm/miniredis/lib/payload"
+	"github.com/panupakm/miniredis/payload"
+	cmd "github.com/panupakm/miniredis/request"
 )
 
 type Set struct {

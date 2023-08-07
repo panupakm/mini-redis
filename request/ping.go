@@ -3,7 +3,7 @@ package cmd
 import (
 	"io"
 
-	"github.com/panupakm/miniredis/lib/payload"
+	"github.com/panupakm/miniredis/payload"
 )
 
 type Ping struct {

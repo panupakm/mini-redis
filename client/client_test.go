@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/panupakm/miniredis/lib/payload"
+	"github.com/panupakm/miniredis/payload"
 )
 
 func TestNewClient(t *testing.T) {

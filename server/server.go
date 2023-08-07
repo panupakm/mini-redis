@@ -9,9 +9,9 @@ import (
 	"github.com/panupakm/miniredis"
 	"github.com/panupakm/miniredis/internal/db"
 	"github.com/panupakm/miniredis/internal/pubsub"
-	"github.com/panupakm/miniredis/internal/server/handler"
-	"github.com/panupakm/miniredis/lib/cmd"
-	"github.com/panupakm/miniredis/lib/payload"
+	"github.com/panupakm/miniredis/payload"
+	cmd "github.com/panupakm/miniredis/request"
+	"github.com/panupakm/miniredis/server/handler"
 )
 
 const (
@@ -57,11 +57,11 @@ func (s *Server) Start() error {
 			continue
 		}
 		fmt.Println("client connected")
-		go s.processClient(connection, miniredis.NewContext(s.db, s.ps))
+		go processClient(connection, miniredis.NewContext(s.db, s.ps))
 	}
 }
 
-func (s *Server) processClient(conn net.Conn, ctx *miniredis.Context) {
+func processClient(conn net.Conn, ctx *miniredis.Context) {
 
 	for {
 		var cmdstr payload.String
@@ -76,7 +76,7 @@ func (s *Server) processClient(conn net.Conn, ctx *miniredis.Context) {
 		}
 		switch cmdstr {
 		case cmd.PingCode:
-			handler.HandlePing(conn, ctx)
+			handler.HandlePing(conn)
 		case cmd.SetCode:
 			handler.HandleSet(conn, ctx)
 		case cmd.GetCode:

@@ -5,8 +5,8 @@ import (
 	"net"
 
 	miniredis "github.com/panupakm/miniredis"
-	"github.com/panupakm/miniredis/lib/cmd"
-	"github.com/panupakm/miniredis/lib/payload"
+	"github.com/panupakm/miniredis/payload"
+	cmd "github.com/panupakm/miniredis/request"
 )
 
 type Get struct {

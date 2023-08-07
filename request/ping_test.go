@@ -4,6 +4,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/panupakm/miniredis/payload"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +20,7 @@ func TestPingReadFrom(t *testing.T) {
 		{
 			name: "ping with valid message",
 			args: args{
-				r: makeStringPayloadReader("PONG"),
+				r: payload.MakeStringPayloadReader("PONG"),
 			},
 			want: &Ping{
 				message: "PONG",
@@ -28,7 +29,7 @@ func TestPingReadFrom(t *testing.T) {
 		{
 			name: "ping with empty message",
 			args: args{
-				r: makeStringPayloadReader(""),
+				r: payload.MakeStringPayloadReader(""),
 			},
 			want: &Ping{
 				message: "",

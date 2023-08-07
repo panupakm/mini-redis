@@ -3,7 +3,7 @@ package client
 import (
 	"net"
 
-	"github.com/panupakm/miniredis/lib/payload"
+	"github.com/panupakm/miniredis/payload"
 )
 
 type Subsriber struct {

@@ -4,6 +4,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/panupakm/miniredis/payload"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +20,7 @@ func TestGetReadFrom(t *testing.T) {
 		{
 			name: "get with valid key",
 			args: args{
-				r: makeStringPayloadReader("Yahoo"),
+				r: payload.MakeStringPayloadReader("Yahoo"),
 			},
 			want: &Get{
 				Key: "Yahoo",
@@ -28,7 +29,7 @@ func TestGetReadFrom(t *testing.T) {
 		{
 			name: "get with empty key",
 			args: args{
-				r: makeStringPayloadReader(""),
+				r: payload.MakeStringPayloadReader(""),
 			},
 			want: &Get{
 				Key: "",

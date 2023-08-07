@@ -6,7 +6,7 @@ import (
 
 	"github.com/panupakm/miniredis/internal/db"
 	"github.com/panupakm/miniredis/internal/pubsub"
-	"github.com/panupakm/miniredis/internal/server"
+	"github.com/panupakm/miniredis/server"
 )
 
 func main() {

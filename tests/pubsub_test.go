@@ -90,7 +90,7 @@ func TestPubToExistingTopic(t *testing.T) {
 			cpub, cpubclose := common.SetUpClient(t, port)
 			defer cpubclose()
 
-			//two clients subscribing to the same topic
+			// two clients subscribing to the same topic
 			subscriber1, await, err := csub1.Sub(tt.args.topic)
 			require.NoError(t, err)
 			result := <-await
@@ -103,11 +103,11 @@ func TestPubToExistingTopic(t *testing.T) {
 			require.NoError(t, result.Err)
 			require.Equal(t, tt.args.result, string(result.Buffer))
 
-			//publish string message
+			// publish string message
 			_, err = cpub.PubString(tt.args.topic, tt.args.msg)
 			require.NoError(t, err)
 
-			//wait for message
+			// wait for message
 			msg, _ := subscriber1.NextMessage()
 			str, _ := msg.AsString()
 			require.Equal(t, tt.args.msg, str)

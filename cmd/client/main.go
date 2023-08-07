@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/panupakm/miniredis/internal/client"
+	"github.com/panupakm/miniredis/client"
 )
 
 func main() {
