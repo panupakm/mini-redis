@@ -5,3 +5,6 @@ test-cov:
 		github.com/panupakm/miniredis/server \
 		github.com/panupakm/miniredis/request
 	go tool cover -html=coverage.out
+
+vul-check:
+	govulncheck ./...

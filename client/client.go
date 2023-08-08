@@ -1,7 +1,8 @@
-// client to connect to mini redis server
+// Package client implementation streamss requests from client to server.
 package client
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/panupakm/miniredis/payload"
@@ -9,27 +10,41 @@ import (
 	cmd "github.com/panupakm/miniredis/request"
 )
 
+type Dialer interface {
+	Dial(network, addr string) (net.Conn, error)
+}
+
+type ImplDialer struct {
+	Dialer
+}
+
+func (_ *ImplDialer) Dial(network, addr string) (net.Conn, error) {
+	return net.Dial(network, addr)
+}
+
 type Client struct {
 	conn net.Conn
 	addr string
+	dial Dialer
 }
 
 type ResultChannel struct {
 	*payload.Result
-	Str string
 	Err error
 }
 
 const (
-	Protocal = "tcp"
+	protocal = "tcp"
 )
 
 func NewClient() *Client {
-	return &Client{}
+	return &Client{
+		dial: &ImplDialer{},
+	}
 }
 
 func (c *Client) Connect(addr string) error {
-	conn, err := net.Dial(Protocal, addr)
+	conn, err := c.dial.Dial(protocal, addr)
 	if err != nil {
 		return err
 	}
@@ -39,6 +54,9 @@ func (c *Client) Connect(addr string) error {
 }
 
 func (c *Client) Close() error {
+	if c.conn == nil {
+		return fmt.Errorf("connection is not established")
+	}
 	return c.conn.Close()
 }
 
@@ -59,8 +77,11 @@ func (c *Client) Ping(msg string) (chan ResultChannel, error) {
 	}
 
 	go func() {
-		r, err := c.ReadResult()
-		ch <- ResultChannel{Str: string(r.Buffer), Err: err}
+		r, err := c.readResult()
+		ch <- ResultChannel{
+			Result: r,
+			Err:    err,
+		}
 	}()
 
 	return ch, nil
@@ -83,7 +104,7 @@ func (c *Client) Sub(topic string) (*Subsriber, chan ResultChannel, error) {
 	}
 
 	go func() {
-		r, err := c.ReadResult()
+		r, err := c.readResult()
 		ch <- ResultChannel{Result: r, Err: err}
 	}()
 
@@ -117,7 +138,7 @@ func (c *Client) SetString(key string, value string) (chan ResultChannel, error)
 
 	ch := make(chan ResultChannel)
 	go func() {
-		r, err := c.ReadResult()
+		r, err := c.readResult()
 		ch <- ResultChannel{Result: r, Err: err}
 	}()
 	return ch, nil
@@ -138,7 +159,7 @@ func (c *Client) Get(key string) (chan ResultChannel, error) {
 
 	ch := make(chan ResultChannel)
 	go func() {
-		r, err := c.ReadResult()
+		r, err := c.readResult()
 		ch <- ResultChannel{Result: r, Err: err}
 	}()
 	return ch, nil
@@ -152,13 +173,13 @@ func (c *Client) PubString(topic string, msg string) (chan ResultChannel, error)
 
 	ch := make(chan ResultChannel)
 	go func() {
-		r, err := c.ReadResult()
+		r, err := c.readResult()
 		ch <- ResultChannel{Result: r, Err: err}
 	}()
 	return ch, nil
 }
 
-func (c *Client) ReadResult() (*payload.Result, error) {
+func (c *Client) readResult() (*payload.Result, error) {
 	var result payload.Result
 	_, err := result.ReadFrom(c.conn)
 	if err != nil {

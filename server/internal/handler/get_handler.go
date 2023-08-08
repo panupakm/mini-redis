@@ -1,3 +1,4 @@
+// Package handler is internal. It implements how to handle multiple requests
 package handler
 
 import (

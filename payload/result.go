@@ -10,7 +10,7 @@ import (
 
 type Result struct {
 	Code   uint16
-	Length uint64
+	Length uint32
 	Typ    ValueType
 	Buffer []byte
 }
@@ -18,7 +18,7 @@ type Result struct {
 func NewResult(typ ValueType, buffer []byte) *Result {
 	return &Result{
 		Code:   0,
-		Length: uint64(len(buffer)),
+		Length: uint32(len(buffer)),
 		Typ:    typ,
 		Buffer: buffer,
 	}
@@ -27,7 +27,7 @@ func NewResult(typ ValueType, buffer []byte) *Result {
 func NewErrResult(typ ValueType, buffer []byte) *Result {
 	return &Result{
 		Code:   1,
-		Length: uint64(len(buffer)),
+		Length: uint32(len(buffer)),
 		Typ:    typ,
 		Buffer: buffer,
 	}

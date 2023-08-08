@@ -18,7 +18,7 @@ func SetUpServer(t *testing.T, port string) *server.Server {
 
 	t.Log("Start server...")
 	s := server.NewServer("localhost", port, d, ps)
-	go s.Start()
+	go s.ListenAndServe()
 
 	return s
 }
@@ -39,7 +39,7 @@ func SetUpServerClient(t *testing.T) (*server.Server, *client.Client, func()) {
 
 	t.Log("Start server...")
 	s := server.NewServer("localhost", "9988", d, ps)
-	go s.Start()
+	go s.ListenAndServe()
 
 	c := client.NewClient()
 	err := c.Connect("localhost:9988")

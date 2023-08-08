@@ -91,7 +91,7 @@ func TestServer_Start(t *testing.T) {
 				db:       tt.fields.db,
 				ps:       tt.fields.ps,
 			}
-			s.Start()
+			s.ListenAndServe()
 		})
 	}
 }

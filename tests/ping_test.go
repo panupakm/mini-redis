@@ -53,7 +53,7 @@ func TestPing(t *testing.T) {
 			require.NoError(t, err)
 			r := <-ch
 			require.NoError(t, r.Err)
-			assert.Equal(t, tt.args.msg, r.Str)
+			assert.Equal(t, tt.args.msg, string(r.Buffer))
 		})
 	}
 }

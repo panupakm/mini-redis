@@ -12,5 +12,5 @@ import (
 func main() {
 	s := server.NewServer("localhost", "9988", db.NewDb(), pubsub.NewPubSub())
 	fmt.Println("Server started")
-	s.Start()
+	s.ListenAndServe()
 }

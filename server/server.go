@@ -11,7 +11,7 @@ import (
 	"github.com/panupakm/miniredis/internal/pubsub"
 	"github.com/panupakm/miniredis/payload"
 	cmd "github.com/panupakm/miniredis/request"
-	"github.com/panupakm/miniredis/server/handler"
+	"github.com/panupakm/miniredis/server/internal/handler"
 )
 
 const (
@@ -39,7 +39,7 @@ func (s *Server) Close() error {
 	return s.listener.Close()
 }
 
-func (s *Server) Start() error {
+func (s *Server) ListenAndServe() error {
 	listener, err := net.Listen(Protocal, fmt.Sprintf("%s:%s", s.host, s.port))
 	s.listener = listener
 	if err != nil {
