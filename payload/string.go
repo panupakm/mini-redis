@@ -12,23 +12,23 @@ func (s String) Bytes() []byte {
 	return []byte(s)
 }
 
-func (s String) String() string {
-	return string(s)
+func (s *String) String() string {
+	return string(*s)
 }
 
-func (s String) WriteTo(w io.Writer) (int64, error) {
+func (s *String) WriteTo(w io.Writer) (int64, error) {
 	err := binary.Write(w, binary.BigEndian, StringType)
 	if err != nil {
 		return 0, err
 	}
 	var n int64 = 1
-	err = binary.Write(w, binary.BigEndian, uint32(len(s)))
+	err = binary.Write(w, binary.BigEndian, uint32(len(*s)))
 	if err != nil {
 		return 0, err
 	}
 	n += 4
 
-	o, err := w.Write([]byte(s))
+	o, err := w.Write([]byte(*s))
 	return n + int64(o), err
 }
 

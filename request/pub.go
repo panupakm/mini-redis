@@ -1,4 +1,4 @@
-package cmd
+package request
 
 import (
 	"encoding/binary"
@@ -18,6 +18,28 @@ type Pub struct {
 const (
 	PubCode = "pub"
 )
+
+func PubStringTo(w io.Writer, topic, msg string) error {
+	pl := payload.String(PubCode)
+	_, err := pl.WriteTo(w)
+	if err != nil {
+		return err
+	}
+
+	pl = payload.String(topic)
+	_, err = pl.WriteTo(w)
+	if err != nil {
+		return err
+	}
+
+	pl = payload.String(msg)
+	_, err = pl.WriteTo(w)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func PubReadFrom(r io.Reader) *Pub {
 	var topic payload.String

@@ -1,4 +1,4 @@
-// miniredis project server main.go
+// Package server provies functionality to start and stop the mini redis server.
 package server
 
 import (

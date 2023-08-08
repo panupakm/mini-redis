@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/panupakm/miniredis/payload"
+	"github.com/panupakm/miniredis/request"
 	cmd "github.com/panupakm/miniredis/request"
 )
 
@@ -144,20 +145,7 @@ func (c *Client) Get(key string) (chan ResultChannel, error) {
 }
 
 func (c *Client) PubString(topic string, msg string) (chan ResultChannel, error) {
-	pl := payload.String(cmd.PubCode)
-	_, err := pl.WriteTo(c.conn)
-	if err != nil {
-		return nil, err
-	}
-
-	pl = payload.String(topic)
-	_, err = pl.WriteTo(c.conn)
-	if err != nil {
-		return nil, err
-	}
-
-	pl = payload.String(msg)
-	_, err = pl.WriteTo(c.conn)
+	err := request.PubStringTo(c.conn, topic, msg)
 	if err != nil {
 		return nil, err
 	}

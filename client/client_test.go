@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/panupakm/miniredis/payload"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewClient(t *testing.T) {
@@ -14,41 +15,44 @@ func TestNewClient(t *testing.T) {
 		name string
 		want *Client
 	}{
-		// TODO: Add test cases.
+		{
+			name: "new client",
+			want: &Client{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewClient(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewClient() = %v, want %v", got, tt.want)
-			}
+			got := NewClient()
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
 
 func TestClient_Connect(t *testing.T) {
-	type fields struct {
-		conn net.Conn
-		addr string
-	}
 	type args struct {
 		addr string
 	}
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "invalid address valid port",
+			args: args{
+				addr: "sadfs:23333",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Client{
-				conn: tt.fields.conn,
-				addr: tt.fields.addr,
-			}
-			if err := c.Connect(tt.args.addr); (err != nil) != tt.wantErr {
-				t.Errorf("Client.Connect() error = %v, wantErr %v", err, tt.wantErr)
+			c := NewClient()
+			err := c.Connect(tt.args.addr)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
