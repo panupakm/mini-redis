@@ -17,16 +17,20 @@ const (
 	SetCode = "set"
 )
 
-func SetReadFrom(r io.Reader) *Set {
+func SetReadFrom(r io.Reader) (Set, error) {
 	var key payload.String
 	key.ReadFrom(r)
 
 	var value payload.String
-	value.ReadFrom(r)
-	return &Set{
-		Key:   key.String(),
-		Value: value.Bytes(),
+	_, err := value.ReadFrom(r)
+	if err != nil {
+		return Set{}, err
 	}
+	return Set{
+		Key:   key.String(),
+		Typ:   payload.StringType,
+		Value: value.Bytes(),
+	}, nil
 }
 
 func (s *Set) String() string {

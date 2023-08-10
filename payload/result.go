@@ -33,6 +33,15 @@ func NewErrResult(typ ValueType, buffer []byte) *Result {
 	}
 }
 
+func NewResultFromGeneral(g General) *Result {
+	return &Result{
+		Code:   0,
+		Length: g.len,
+		Typ:    g.typ,
+		Buffer: g.buf,
+	}
+}
+
 func (r Result) Bytes() []byte {
 	var buf bytes.Buffer
 	binary.Write(&buf, binary.BigEndian, r.Code)

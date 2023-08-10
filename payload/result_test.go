@@ -282,7 +282,16 @@ func TestResult_DataAsString(t *testing.T) {
 		fields fields
 		want   string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "non-empty string",
+			fields: fields{
+				Code:   0,
+				Length: uint32(5),
+				Typ:    StringType,
+				Buffer: []byte("hello"),
+			},
+			want: "hello",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -292,9 +301,8 @@ func TestResult_DataAsString(t *testing.T) {
 				Typ:    tt.fields.Typ,
 				Buffer: tt.fields.Buffer,
 			}
-			if got := rs.DataAsString(); got != tt.want {
-				t.Errorf("Result.DataAsString() = %v, want %v", got, tt.want)
-			}
+			got := rs.DataAsString()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

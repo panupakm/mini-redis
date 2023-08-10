@@ -54,21 +54,24 @@ func TestBinary_WriteTo(t *testing.T) {
 		want    int64
 		wantW   string
 		wantErr bool
-	}{}
+	}{
+		{
+			name:    "valid string",
+			b:       Binary("Hello World!"),
+			want:    12 + 5,
+			wantW:   "\x01\x00\x00\x00\fHello World!",
+			wantErr: false,
+		},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			w := &bytes.Buffer{}
 			got, err := tt.b.WriteTo(w)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Binary.WriteTo() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("Binary.WriteTo() = %v, want %v", got, tt.want)
-			}
-			if gotW := w.String(); gotW != tt.wantW {
-				t.Errorf("Binary.WriteTo() = %v, want %v", gotW, tt.wantW)
-			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+
+			gotW := w.String()
+			assert.Equal(t, tt.wantW, gotW)
 		})
 	}
 }
@@ -81,20 +84,38 @@ func TestBinary_ReadFrom(t *testing.T) {
 		name    string
 		b       *Binary
 		args    args
-		want    int64
+		wantGot int64
+		wantB   []byte
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "read from",
+			b:    &Binary{},
+			args: args{
+				r: MakeBinaryPayloadReader([]byte{0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08}),
+			},
+			wantGot: 12,
+			wantB:   []byte{0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08},
+		},
+		{
+			name: "read from over maximum length",
+			b:    &Binary{},
+			args: args{
+				r: MakeBinaryPayloadReader(make([]byte, MaxPayloadSize+1)),
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.b.ReadFrom(tt.args.r)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Binary.ReadFrom() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("Binary.ReadFrom() = %v, want %v", got, tt.want)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantGot, got)
+				assert.Equal(t, tt.wantB, tt.b.Bytes())
 			}
 		})
 	}

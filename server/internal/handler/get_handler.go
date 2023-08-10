@@ -27,7 +27,7 @@ func HandleGet(conn net.Conn, ctx *miniredis.Context) error {
 		return err
 	}
 
-	r := payload.NewResult(v.Typ, v.Buf)
+	r := payload.NewResultFromGeneral(v)
 	_, err = r.WriteTo(conn)
 	return err
 }

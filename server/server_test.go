@@ -3,11 +3,13 @@ package server
 
 import (
 	"net"
-	"reflect"
 	"testing"
+	"time"
 
+	"github.com/panupakm/miniredis"
 	"github.com/panupakm/miniredis/internal/db"
 	"github.com/panupakm/miniredis/internal/pubsub"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewServer(t *testing.T) {
@@ -17,18 +19,33 @@ func TestNewServer(t *testing.T) {
 		db   *db.Db
 		ps   *pubsub.PubSub
 	}
+	db := db.NewDb()
+	pubsub := pubsub.NewPubSub()
 	tests := []struct {
 		name string
 		args args
-		want *Server
+		want Server
 	}{
-		// TODO: Add test cases.
+		{
+			name: "create with localhost url",
+			args: args{
+				host: "localhost",
+				port: "6379",
+				db:   db,
+				ps:   pubsub,
+			},
+			want: Server{
+				host: "localhost",
+				port: "6379",
+				db:   db,
+				ps:   pubsub,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewServer(tt.args.host, tt.args.port, tt.args.db, tt.args.ps); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewServer() = %v, want %v", got, tt.want)
-			}
+			got := NewServer(tt.args.host, tt.args.port, tt.args.db, tt.args.ps)
+			assert.Equal(t, tt.want, *got)
 		})
 	}
 }
@@ -47,7 +64,14 @@ func TestServer_Close(t *testing.T) {
 		fields  fields
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "close server with connection",
+			fields: fields{
+				host: "localhost",
+				port: "0",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -59,74 +83,26 @@ func TestServer_Close(t *testing.T) {
 				db:       tt.fields.db,
 				ps:       tt.fields.ps,
 			}
-			if err := s.Close(); (err != nil) != tt.wantErr {
-				t.Errorf("Server.Close() error = %v, wantErr %v", err, tt.wantErr)
-			}
+			go s.ListenAndServe()
+			time.Sleep(1 * time.Second)
+			err := s.Close()
+			assert.NoError(t, err)
 		})
 	}
 }
 
-func TestServer_Start(t *testing.T) {
-	type fields struct {
-		host     string
-		port     string
-		conn     net.Conn
-		listener net.Listener
-		db       *db.Db
-		ps       *pubsub.PubSub
+func Test_processClient(t *testing.T) {
+	type args struct {
+		conn net.Conn
+		ctx  *miniredis.Context
 	}
 	tests := []struct {
-		name   string
-		fields fields
-	}{
-		// TODO: Add test cases.
-	}
+		name string
+		args args
+	}{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &Server{
-				host:     tt.fields.host,
-				port:     tt.fields.port,
-				conn:     tt.fields.conn,
-				listener: tt.fields.listener,
-				db:       tt.fields.db,
-				ps:       tt.fields.ps,
-			}
-			s.ListenAndServe()
+			processClient(tt.args.conn, tt.args.ctx)
 		})
 	}
 }
-
-// func TestServer_processClient(t *testing.T) {
-// 	type fields struct {
-// 		host     string
-// 		port     string
-// 		conn     net.Conn
-// 		listener net.Listener
-// 		db       *db.Db
-// 		ps       *pubsub.PubSub
-// 	}
-// 	type args struct {
-// 		conn net.Conn
-// 		ctx  *miniredis.Context
-// 	}
-// 	tests := []struct {
-// 		name   string
-// 		fields fields
-// 		args   args
-// 	}{
-// 		// TODO: Add test cases.
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			s := &Server{
-// 				host:     tt.fields.host,
-// 				port:     tt.fields.port,
-// 				conn:     tt.fields.conn,
-// 				listener: tt.fields.listener,
-// 				db:       tt.fields.db,
-// 				ps:       tt.fields.ps,
-// 			}
-// 			s.processClient(tt.args.conn, tt.args.ctx)
-// 		})
-// 	}
-// }

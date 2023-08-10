@@ -1,3 +1,4 @@
+// Package db provides functions for interacting with a database.
 package db
 
 import (
@@ -6,37 +7,30 @@ import (
 	"github.com/panupakm/miniredis/payload"
 )
 
-type TypeBuffer struct {
-	Typ payload.ValueType
-	Buf []byte
+type Db struct {
+	pairs map[string]payload.General
 }
 
-type Db struct {
-	Map map[string]TypeBuffer
+type SetGet interface {
+	Set(key string, value payload.General) error
+	Get(key string) (payload.General, error)
 }
 
 func NewDb() *Db {
 	return &Db{
-		Map: make(map[string]TypeBuffer),
+		pairs: make(map[string]payload.General),
 	}
 }
 
-func NewTypeBuffer(typ payload.ValueType, buf []byte) TypeBuffer {
-	return TypeBuffer{
-		Typ: typ,
-		Buf: buf,
-	}
-}
-
-func (db *Db) Set(key string, value TypeBuffer) error {
-	db.Map[key] = value
+func (db *Db) Set(key string, value payload.General) error {
+	db.pairs[key] = value
 	return nil
 }
 
-func (db *Db) Get(key string) (TypeBuffer, error) {
-	v, ok := db.Map[key]
+func (db *Db) Get(key string) (payload.General, error) {
+	v, ok := db.pairs[key]
 	if !ok {
-		return TypeBuffer{}, fmt.Errorf("key %s not found", key)
+		return payload.General{}, fmt.Errorf("key %s not found", key)
 	}
 	return v, nil
 }

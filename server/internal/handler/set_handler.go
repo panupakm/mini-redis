@@ -5,7 +5,6 @@ import (
 	"net"
 
 	miniredis "github.com/panupakm/miniredis"
-	mdb "github.com/panupakm/miniredis/internal/db"
 	"github.com/panupakm/miniredis/payload"
 	cmd "github.com/panupakm/miniredis/request"
 )
@@ -16,10 +15,13 @@ type Set struct {
 }
 
 func HandleSet(conn net.Conn, ctx *miniredis.Context) error {
-	pair := cmd.SetReadFrom(conn)
+	pair, err := cmd.SetReadFrom(conn)
+	if err != nil {
+		return err
+	}
 
 	db := ctx.Db
-	err := db.Set(pair.Key, mdb.NewTypeBuffer(payload.StringType, pair.Value))
+	err = db.Set(pair.Key, *payload.NewGeneral(payload.StringType, pair.Value))
 	if err != nil {
 		fmt.Println("Error set:", err.Error())
 		payload.NewErrResult(payload.StringType, []byte(err.Error()))
