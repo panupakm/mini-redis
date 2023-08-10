@@ -6,11 +6,11 @@ import (
 	"io"
 	"net"
 
-	"github.com/panupakm/miniredis"
 	"github.com/panupakm/miniredis/internal/db"
 	"github.com/panupakm/miniredis/internal/pubsub"
 	"github.com/panupakm/miniredis/payload"
 	cmd "github.com/panupakm/miniredis/request"
+	"github.com/panupakm/miniredis/server/context"
 	"github.com/panupakm/miniredis/server/internal/handler"
 )
 
@@ -24,14 +24,16 @@ type Server struct {
 	listener   net.Listener
 	db         *db.Db
 	ps         *pubsub.PubSub
+	handler    handler.Handler
 }
 
-func NewServer(host, port string, db *db.Db, ps *pubsub.PubSub) *Server {
+func NewServer(host string, port uint, db *db.Db, ps *pubsub.PubSub) *Server {
 	return &Server{
-		host: host,
-		port: port,
-		db:   db,
-		ps:   ps,
+		host:    host,
+		port:    fmt.Sprint(port),
+		db:      db,
+		ps:      ps,
+		handler: handler.NewHandler(),
 	}
 }
 
@@ -57,11 +59,11 @@ func (s *Server) ListenAndServe() error {
 			continue
 		}
 		fmt.Println("client connected")
-		go processClient(connection, miniredis.NewContext(s.db, s.ps))
+		go processClient(connection, context.NewContext(s.db, s.ps), s.handler)
 	}
 }
 
-func processClient(conn net.Conn, ctx *miniredis.Context) {
+func processClient(conn net.Conn, ctx *context.Context, handler handler.Handler) {
 
 	for {
 		var cmdstr payload.String

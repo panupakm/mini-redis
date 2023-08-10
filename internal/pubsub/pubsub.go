@@ -8,22 +8,33 @@ import (
 )
 
 type PubSub struct {
-	Map map[string][]net.Conn
+	connmap map[string][]net.Conn
+}
+
+type PubSuber interface {
+	Sub(topic string, conn net.Conn)
+	Pub(topic string, typ payload.ValueType, buff []byte, conn net.Conn)
+	Unsub(conn net.Conn)
+	IsSub(topic string, conn net.Conn) bool
 }
 
 func NewPubSub() *PubSub {
 	return &PubSub{
-		Map: make(map[string][]net.Conn),
+		connmap: make(map[string][]net.Conn),
 	}
 }
 
 func (ps *PubSub) Sub(topic string, conn net.Conn) {
-	ps.Map[topic] = append(ps.Map[topic], conn)
+	ps.connmap[topic] = append(ps.connmap[topic], conn)
+}
+
+func (ps *PubSub) IsSub(topic string) bool {
+	conns, ok := ps.connmap[topic]
+	return ok && len(conns) > 0
 }
 
 func (ps *PubSub) Pub(topic string, typ payload.ValueType, buff []byte, conn net.Conn) {
-	fmt.Printf("Pub: %s\n", string(buff))
-	conns := ps.Map[topic]
+	conns := ps.connmap[topic]
 	for _, con := range conns {
 		if con == conn {
 			continue
@@ -32,16 +43,16 @@ func (ps *PubSub) Pub(topic string, typ payload.ValueType, buff []byte, conn net
 		msg := payload.NewSubMsg(typ, buff)
 		_, err := msg.WriteTo(con)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("pub error:", err)
 		}
 	}
 }
 
-func (ps *PubSub) UnsubConnection(conn net.Conn) {
-	for topic, conns := range ps.Map {
+func (ps *PubSub) Unsub(conn net.Conn) {
+	for topic, conns := range ps.connmap {
 		for i, c := range conns {
 			if c == conn {
-				ps.Map[topic] = append(ps.Map[topic][:i], ps.Map[topic][i+1:]...)
+				ps.connmap[topic] = append(ps.connmap[topic][:i], ps.connmap[topic][i+1:]...)
 				break
 			}
 		}

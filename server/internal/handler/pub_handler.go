@@ -3,12 +3,12 @@ package handler
 import (
 	"net"
 
-	miniredis "github.com/panupakm/miniredis"
 	"github.com/panupakm/miniredis/payload"
 	cmd "github.com/panupakm/miniredis/request"
+	"github.com/panupakm/miniredis/server/context"
 )
 
-func HandlePub(conn net.Conn, ctx *miniredis.Context) error {
+func HandlePub(conn net.Conn, ctx *context.Context) error {
 	pub := cmd.PubReadFrom(conn)
 	ps := ctx.PubSub
 

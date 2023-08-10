@@ -36,7 +36,7 @@ func TestSub(t *testing.T) {
 		},
 	}
 
-	port := "9990"
+	port := uint(9990)
 
 	_ = common.SetUpServer(t, port)
 	for _, tt := range tests {
@@ -77,9 +77,10 @@ func TestPubToExistingTopic(t *testing.T) {
 		},
 	}
 
-	port := "9991"
+	port := uint(9991)
 
-	_ = common.SetUpServer(t, port)
+	server := common.SetUpServer(t, port)
+	defer server.Close()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			csub1, csubclose1 := common.SetUpClient(t, port)

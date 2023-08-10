@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func SetUpServer(t *testing.T, port string) *server.Server {
+func SetUpServer(t *testing.T, port uint) *server.Server {
 
 	d := db.NewDb()
 	ps := pubsub.NewPubSub()
@@ -23,9 +23,9 @@ func SetUpServer(t *testing.T, port string) *server.Server {
 	return s
 }
 
-func SetUpClient(t *testing.T, port string) (*client.Client, func()) {
+func SetUpClient(t *testing.T, port uint) (*client.Client, func()) {
 	c := client.NewClient()
-	err := c.Connect(fmt.Sprintf("localhost:%s", port))
+	err := c.Connect(fmt.Sprintf("localhost:%d", port))
 	require.NoError(t, err)
 	return c, func() {
 		c.Close()
@@ -38,7 +38,7 @@ func SetUpServerClient(t *testing.T) (*server.Server, *client.Client, func()) {
 	ps := pubsub.NewPubSub()
 
 	t.Log("Start server...")
-	s := server.NewServer("localhost", "9988", d, ps)
+	s := server.NewServer("localhost", 9988, d, ps)
 	go s.ListenAndServe()
 
 	c := client.NewClient()

@@ -2,6 +2,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 
 	"github.com/panupakm/miniredis/internal/db"
@@ -10,7 +11,11 @@ import (
 )
 
 func main() {
-	s := server.NewServer("localhost", "9988", db.NewDb(), pubsub.NewPubSub())
+	port := flag.Uint("port", 9988, "port to listen on")
+	addr := flag.String("addr", "localhost", "address to listen on")
+	flag.Parse()
+
+	s := server.NewServer(*addr, *port, db.NewDb(), pubsub.NewPubSub())
 	fmt.Println("Server started")
 	s.ListenAndServe()
 }

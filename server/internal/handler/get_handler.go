@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net"
 
-	miniredis "github.com/panupakm/miniredis"
 	"github.com/panupakm/miniredis/payload"
 	cmd "github.com/panupakm/miniredis/request"
+	"github.com/panupakm/miniredis/server/context"
 )
 
 type Get struct {
@@ -15,7 +15,7 @@ type Get struct {
 	value []byte
 }
 
-func HandleGet(conn net.Conn, ctx *miniredis.Context) error {
+func HandleGet(conn net.Conn, ctx *context.Context) error {
 	pair := cmd.GetReadFrom(conn)
 
 	db := ctx.Db

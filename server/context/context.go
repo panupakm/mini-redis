@@ -1,4 +1,4 @@
-package miniredis
+package context
 
 import (
 	"context"

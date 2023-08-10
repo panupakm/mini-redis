@@ -1,10 +1,13 @@
 package pubsub
 
 import (
-	"github.com/panupakm/miniredis/payload"
 	"net"
-	"reflect"
 	"testing"
+
+	"github.com/panupakm/miniredis/mock"
+	"github.com/panupakm/miniredis/payload"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func TestNewPubSub(t *testing.T) {
@@ -12,21 +15,20 @@ func TestNewPubSub(t *testing.T) {
 		name string
 		want *PubSub
 	}{
-		// TODO: Add test cases.
+		{
+			name: "new pubsub",
+			want: &PubSub{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewPubSub(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewPubSub() = %v, want %v", got, tt.want)
-			}
+			got := NewPubSub()
+			assert.IsType(t, &PubSub{}, got)
 		})
 	}
 }
 
 func TestPubSub_Pub(t *testing.T) {
-	type fields struct {
-		Map map[string][]net.Conn
-	}
 	type args struct {
 		topic string
 		typ   payload.ValueType
@@ -34,16 +36,31 @@ func TestPubSub_Pub(t *testing.T) {
 		conn  net.Conn
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name string
+		args args
 	}{
-		// TODO: Add test cases.
+		{
+			name: "pub with topic and string value",
+			args: args{
+				topic: "topic",
+				typ:   payload.StringType,
+				buff:  []byte("test"),
+				conn:  nil,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mconn := mock.NewMockConn(ctrl)
+			mconn.EXPECT().Write(gomock.Any()).AnyTimes()
+			connmap := map[string][]net.Conn{
+				"topic": {mconn},
+			}
 			ps := &PubSub{
-				Map: tt.fields.Map,
+				connmap: connmap,
 			}
 			ps.Pub(tt.args.topic, tt.args.typ, tt.args.buff, tt.args.conn)
 		})
@@ -63,38 +80,62 @@ func TestPubSub_Sub(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		// TODO: Add test cases.
+		{
+			name: "sub with topic and string value",
+			fields: fields{
+				Map: make(map[string][]net.Conn),
+			},
+			args: args{
+				topic: "topic",
+				conn:  nil,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			connMock := mock.NewMockConn(ctrl)
 			ps := &PubSub{
-				Map: tt.fields.Map,
+				connmap: tt.fields.Map,
 			}
-			ps.Sub(tt.args.topic, tt.args.conn)
+			ps.Sub(tt.args.topic, connMock)
+			assert.True(t, ps.IsSub(tt.args.topic))
 		})
 	}
 }
 
-func TestPubSub_UnsubConnection(t *testing.T) {
-	type fields struct {
-		Map map[string][]net.Conn
-	}
+func TestPubSub_Unsub(t *testing.T) {
 	type args struct {
-		conn net.Conn
+		topic string
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name string
+		args args
 	}{
-		// TODO: Add test cases.
+		{
+			name: "unsub with valid connection",
+			args: args{
+				topic: "topic",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			mockconn := mock.NewMockConn(ctrl)
+
 			ps := &PubSub{
-				Map: tt.fields.Map,
+				connmap: map[string][]net.Conn{
+					"topic": {mockconn},
+				},
 			}
-			ps.UnsubConnection(tt.args.conn)
+			assert.True(t, ps.IsSub("topic"))
+			ps.Unsub(mockconn)
+			assert.False(t, ps.IsSub("topic"))
 		})
 	}
 }

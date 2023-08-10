@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net"
 
-	miniredis "github.com/panupakm/miniredis"
 	"github.com/panupakm/miniredis/payload"
 	cmd "github.com/panupakm/miniredis/request"
+	"github.com/panupakm/miniredis/server/context"
 )
 
 type Set struct {
@@ -14,7 +14,7 @@ type Set struct {
 	value []byte
 }
 
-func HandleSet(conn net.Conn, ctx *miniredis.Context) error {
+func HandleSet(conn net.Conn, ctx *context.Context) error {
 	pair, err := cmd.SetReadFrom(conn)
 	if err != nil {
 		return err

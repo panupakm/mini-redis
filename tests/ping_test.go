@@ -41,7 +41,7 @@ func TestPing(t *testing.T) {
 		},
 	}
 
-	port := "9988"
+	port := uint(9988)
 
 	_ = common.SetUpServer(t, port)
 	for _, tt := range tests {

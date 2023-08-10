@@ -2,7 +2,7 @@
 // Source: ./client/client.go
 
 // Package mock_client is a generated GoMock package.
-package mock
+package client
 
 import (
 	net "net"

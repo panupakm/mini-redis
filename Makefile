@@ -20,5 +20,12 @@ test-cov-html:
 		github.com/panupakm/miniredis/server/internal/handler 
 	go tool cover -html=coverage-html.out
 
+test-integration:
+	go test ./tests
+
+build: 
+	go build -o bin/server ./cmd/server/main.go
+	go build -o bin/client ./cmd/client/main.go
+
 vul-check:
 	govulncheck ./...

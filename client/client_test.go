@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/binary"
 	"net"
-	"reflect"
 	"testing"
 
 	"github.com/panupakm/miniredis/mock"
@@ -82,7 +81,7 @@ func TestClient_SuccessConnect(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDialer := mock.NewMockDialer(ctrl)
+	mockDialer := NewMockDialer(ctrl)
 	mockConn := mock.NewMockConn(ctrl)
 	mockDialer.EXPECT().Dial("tcp", "127.0.0.1:9191").Return(mockConn, nil)
 	for _, tt := range tests {
@@ -161,6 +160,10 @@ func configureMockConnResult(code uint16, msg string, ctrl *gomock.Controller) *
 	}()
 
 	mockConn := mock.NewMockConn(ctrl)
+
+	dd := make(map[net.Conn]string)
+	dd[mockConn] = string(mockResultBytes)
+
 	mockConn.EXPECT().Write(gomock.Any()).AnyTimes()
 	mockConn.EXPECT().Read(gomock.Any()).DoAndReturn(func(b []byte) (int, error) {
 		readByteCount := copy(b, mockResultBytes)
@@ -323,40 +326,6 @@ func TestClient_Get(t *testing.T) {
 
 			assert.NoError(t, rs.Err)
 			assert.Equal(t, tt.wantMsg, rs.DataAsString())
-		})
-	}
-}
-
-func TestImplDialer_Dial(t *testing.T) {
-	type fields struct {
-		Dialer Dialer
-	}
-	type args struct {
-		network string
-		addr    string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    net.Conn
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			i := &ImplDialer{
-				Dialer: tt.fields.Dialer,
-			}
-			got, err := i.Dial(tt.args.network, tt.args.addr)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ImplDialer.Dial() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ImplDialer.Dial() = %v, want %v", got, tt.want)
-			}
 		})
 	}
 }
