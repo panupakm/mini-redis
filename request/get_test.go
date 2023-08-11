@@ -80,3 +80,31 @@ func TestGet_String(t *testing.T) {
 		})
 	}
 }
+
+func TestGet_Bytes(t *testing.T) {
+	type fields struct {
+		Key string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []byte
+	}{
+		{
+			name: "valid key",
+			fields: fields{
+				Key: "Yahoo",
+			},
+			want: []byte("\x02\x00\x00\x00\x03get\x02\x00\x00\x00\x05Yahoo"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Get{
+				Key: tt.fields.Key,
+			}
+			got := g.Bytes()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

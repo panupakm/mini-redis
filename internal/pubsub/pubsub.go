@@ -2,49 +2,49 @@ package pubsub
 
 import (
 	"fmt"
-	"net"
+	"io"
 	"sync"
 
 	"github.com/panupakm/miniredis/payload"
 )
 
 type PubSub struct {
-	connmap map[string][]net.Conn
-	mu      sync.RWMutex
+	writermap map[string][]io.Writer
+	mu        sync.RWMutex
 }
 
 type PubSuber interface {
-	Sub(topic string, conn net.Conn)
-	Pub(topic string, typ payload.ValueType, buff []byte, conn net.Conn)
-	Unsub(conn net.Conn)
-	IsSub(topic string, conn net.Conn) bool
+	Sub(topic string, w io.Writer)
+	Pub(topic string, typ payload.ValueType, buff []byte, w io.Writer)
+	Unsub(w io.Writer)
+	IsSub(topic string, w io.Writer) bool
 }
 
 func NewPubSub() *PubSub {
 	return &PubSub{
-		connmap: make(map[string][]net.Conn),
+		writermap: make(map[string][]io.Writer),
 	}
 }
 
-func (ps *PubSub) Sub(topic string, conn net.Conn) {
+func (ps *PubSub) Sub(topic string, w io.Writer) {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
-	ps.connmap[topic] = append(ps.connmap[topic], conn)
+	ps.writermap[topic] = append(ps.writermap[topic], w)
 }
 
 func (ps *PubSub) isSub(topic string) bool {
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
-	conns, ok := ps.connmap[topic]
+	conns, ok := ps.writermap[topic]
 	return ok && len(conns) > 0
 }
 
-func (ps *PubSub) Pub(topic string, typ payload.ValueType, buff []byte, conn net.Conn) {
+func (ps *PubSub) Pub(topic string, typ payload.ValueType, buff []byte, w io.Writer) {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
-	conns := ps.connmap[topic]
+	conns := ps.writermap[topic]
 	for _, con := range conns {
-		if con == conn {
+		if con == w {
 			continue
 		}
 
@@ -56,13 +56,13 @@ func (ps *PubSub) Pub(topic string, typ payload.ValueType, buff []byte, conn net
 	}
 }
 
-func (ps *PubSub) Unsub(conn net.Conn) {
+func (ps *PubSub) Unsub(conn io.Writer) {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
-	for topic, conns := range ps.connmap {
+	for topic, conns := range ps.writermap {
 		for i, c := range conns {
 			if c == conn {
-				ps.connmap[topic] = append(ps.connmap[topic][:i], ps.connmap[topic][i+1:]...)
+				ps.writermap[topic] = append(ps.writermap[topic][:i], ps.writermap[topic][i+1:]...)
 				break
 			}
 		}

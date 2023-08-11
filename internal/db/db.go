@@ -3,12 +3,14 @@ package db
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/panupakm/miniredis/payload"
 )
 
 type Db struct {
 	pairs map[string]payload.General
+	mu    sync.RWMutex
 }
 
 type SetGet interface {
@@ -23,11 +25,16 @@ func NewDb() *Db {
 }
 
 func (db *Db) Set(key string, value payload.General) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
 	db.pairs[key] = value
 	return nil
 }
 
 func (db *Db) Get(key string) (payload.General, error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
 	v, ok := db.pairs[key]
 	if !ok {
 		return payload.General{}, fmt.Errorf("key %s not found", key)

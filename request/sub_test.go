@@ -62,3 +62,31 @@ func TestSub_String(t *testing.T) {
 		})
 	}
 }
+
+func TestSub_Bytes(t *testing.T) {
+	type fields struct {
+		Topic string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []byte
+	}{
+		{
+			name: "Sub to non empty topic",
+			fields: fields{
+				Topic: "greeting",
+			},
+			want: []byte("\x02\x00\x00\x00\x03sub\x02\x00\x00\x00\x08greeting"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Sub{
+				Topic: tt.fields.Topic,
+			}
+			got := s.Bytes()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

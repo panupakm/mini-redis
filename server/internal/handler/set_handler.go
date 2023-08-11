@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"net"
+	"io"
 
 	"github.com/panupakm/miniredis/payload"
 	cmd "github.com/panupakm/miniredis/request"
@@ -14,14 +14,10 @@ type Set struct {
 	value []byte
 }
 
-func HandleSet(conn net.Conn, ctx *context.Context) error {
-	pair, err := cmd.SetReadFrom(conn)
-	if err != nil {
-		return err
-	}
-
+func HandleSet(rw io.ReadWriter, ctx *context.Context) error {
+	pair := cmd.SetReadFrom(rw)
 	db := ctx.Db
-	err = db.Set(pair.Key, *payload.NewGeneral(payload.StringType, pair.Value))
+	err := db.Set(pair.Key, *payload.NewGeneral(payload.StringType, pair.Value))
 	if err != nil {
 		fmt.Println("Error set:", err.Error())
 		payload.NewErrResult(payload.StringType, []byte(err.Error()))
@@ -29,6 +25,6 @@ func HandleSet(conn net.Conn, ctx *context.Context) error {
 	}
 
 	r := payload.NewResult(payload.StringType, []byte("OK"))
-	_, err = r.WriteTo(conn)
+	_, err = r.WriteTo(rw)
 	return err
 }

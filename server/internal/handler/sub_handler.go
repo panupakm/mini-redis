@@ -1,19 +1,19 @@
 package handler
 
 import (
-	"net"
+	"io"
 
 	"github.com/panupakm/miniredis/payload"
 	cmd "github.com/panupakm/miniredis/request"
 	"github.com/panupakm/miniredis/server/context"
 )
 
-func HandleSub(conn net.Conn, ctx *context.Context) error {
-	sub := cmd.SubReadFrom(conn)
+func HandleSub(rw io.ReadWriter, ctx *context.Context) error {
+	sub := cmd.SubReadFrom(rw)
 	ps := ctx.PubSub
 
-	ps.Sub(sub.Topic, conn)
+	ps.Sub(sub.Topic, rw)
 	r := payload.NewResult(payload.StringType, []byte("OK"))
-	_, err := r.WriteTo(conn)
+	_, err := r.WriteTo(rw)
 	return err
 }

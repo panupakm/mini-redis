@@ -1,6 +1,7 @@
 package request
 
 import (
+	"bytes"
 	"io"
 
 	"github.com/panupakm/miniredis/payload"
@@ -24,4 +25,13 @@ func PingReadFrom(r io.Reader) *Ping {
 
 func (p *Ping) String() string {
 	return p.message
+}
+
+func (p *Ping) Bytes() []byte {
+	buf := bytes.NewBuffer([]byte{})
+	str := payload.String(PingCode)
+	str.WriteTo(buf)
+	str = payload.String(p.message)
+	str.WriteTo(buf)
+	return buf.Bytes()
 }

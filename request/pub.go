@@ -1,6 +1,7 @@
 package request
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -11,7 +12,7 @@ import (
 type Pub struct {
 	Topic string
 	Typ   payload.ValueType
-	Len   uint64
+	Len   uint32
 	Data  []byte
 }
 
@@ -65,11 +66,25 @@ func PubReadFrom(r io.Reader) *Pub {
 	return &Pub{
 		Topic: string(topic),
 		Typ:   typ,
-		Len:   uint64(len),
+		Len:   uint32(len),
 		Data:  buff,
 	}
 }
 
 func (s *Pub) String() string {
 	return fmt.Sprintf("pub topic:%s", s.Topic)
+}
+
+func (s *Pub) Bytes() []byte {
+	buf := bytes.NewBuffer([]byte{})
+	str := payload.String(PubCode)
+	str.WriteTo(buf)
+	str = payload.String(s.Topic)
+	str.WriteTo(buf)
+
+	_ = binary.Write(buf, binary.BigEndian, s.Typ)
+	_ = binary.Write(buf, binary.BigEndian, s.Len)
+	buf.Write(s.Data)
+
+	return buf.Bytes()
 }

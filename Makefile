@@ -17,7 +17,7 @@ test-cov-html:
 		github.com/panupakm/miniredis/payload \
 		github.com/panupakm/miniredis/request \
 		github.com/panupakm/miniredis/server \
-		github.com/panupakm/miniredis/server/internal/handler 
+		github.com/panupakm/miniredis/server/internal/handler
 	go tool cover -html=coverage-html.out
 
 test-integration:

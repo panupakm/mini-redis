@@ -1,6 +1,7 @@
 package request
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 
@@ -25,4 +26,15 @@ func SubReadFrom(r io.Reader) *Sub {
 
 func (s *Sub) String() string {
 	return fmt.Sprintf("topic:%s", s.Topic)
+}
+
+func (s *Sub) Bytes() []byte {
+	buf := bytes.NewBuffer([]byte{})
+	str := payload.String(SubCode)
+	str.WriteTo(buf)
+
+	str = payload.String(s.Topic)
+	str.WriteTo(buf)
+
+	return buf.Bytes()
 }

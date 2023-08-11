@@ -2,6 +2,7 @@
 package server
 
 import (
+	"bytes"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -94,11 +95,39 @@ func (s *Server) removeConnection(conn net.Conn) {
 	s.ps.Unsub(conn)
 }
 
+func getPayloadCommandFromConn(conn net.Conn) ([]byte, error) {
+
+	var cmdstr payload.String
+	_, err := cmdstr.ReadFrom(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	switch cmdstr {
+	case cmd.PingCode:
+		return cmd.PingReadFrom(conn).Bytes(), nil
+	case cmd.SetCode:
+		return cmd.SetReadFrom(conn).Bytes(), nil
+	case cmd.GetCode:
+		return cmd.GetReadFrom(conn).Bytes(), nil
+	case cmd.SubCode:
+		return cmd.SubReadFrom(conn).Bytes(), nil
+	case cmd.PubCode:
+		return cmd.PubReadFrom(conn).Bytes(), nil
+	default:
+		return nil, fmt.Errorf("Unknown command: %s", cmdstr)
+	}
+}
+
 func processClient(conn net.Conn, ctx *context.Context, handler handler.Handler, disconnect chan net.Conn) {
 
+	type readWriter struct {
+		io.Reader
+		io.Writer
+	}
+
 	for {
-		var cmdstr payload.String
-		_, err := cmdstr.ReadFrom(conn)
+		buffer, err := getPayloadCommandFromConn(conn)
 		if err != nil {
 			if err == io.EOF {
 				fmt.Printf("Client %s has closed connection\n", conn.RemoteAddr())
@@ -107,21 +136,34 @@ func processClient(conn net.Conn, ctx *context.Context, handler handler.Handler,
 			}
 			break
 		}
-		switch cmdstr {
-		case cmd.PingCode:
-			handler.HandlePing(conn)
-		case cmd.SetCode:
-			handler.HandleSet(conn, ctx)
-		case cmd.GetCode:
-			handler.HandleGet(conn, ctx)
-		case cmd.SubCode:
-			handler.HandleSub(conn, ctx)
-		case cmd.PubCode:
-			handler.HandlePub(conn, ctx)
-		}
+		processBytesCommand(readWriter{
+			Reader: bytes.NewReader(buffer),
+			Writer: conn,
+		}, ctx)
 	}
 	if disconnect != nil {
 		disconnect <- conn
 	}
 	fmt.Println("client closed")
+}
+
+func processBytesCommand(rw io.ReadWriter, ctx *context.Context) {
+	var cmdstr payload.String
+	_, err := cmdstr.ReadFrom(rw)
+	if err != nil {
+		fmt.Printf("Error reading command: %s\n", err.Error())
+		return
+	}
+	switch cmdstr {
+	case cmd.PingCode:
+		handler.HandlePing(rw)
+	case cmd.SetCode:
+		handler.HandleSet(rw, ctx)
+	case cmd.GetCode:
+		handler.HandleGet(rw, ctx)
+	case cmd.SubCode:
+		handler.HandleSub(rw, ctx)
+	case cmd.PubCode:
+		handler.HandlePub(rw, ctx)
+	}
 }

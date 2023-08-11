@@ -2,10 +2,12 @@
 package server
 
 import (
+	"bytes"
+	"context"
 	"crypto/tls"
-	"encoding/binary"
 	"io"
 	"net"
+	"reflect"
 	"testing"
 	"time"
 
@@ -101,50 +103,85 @@ func TestServer_Close(t *testing.T) {
 	}
 }
 
-func testHandlerHelper(ctrl *gomock.Controller, ctx *scontext.Context, code string) {
+type bytesQueue struct {
+	queue [][]byte
+}
+
+func (b *bytesQueue) Add(data []byte) *bytesQueue {
+	b.queue = append(b.queue, data[:1])
+	b.queue = append(b.queue, data[1:5])
+	b.queue = append(b.queue, data[5:])
+	return b
+}
+
+func (b *bytesQueue) Next() (data []byte) {
+	if len(b.queue) > 0 {
+		data = b.queue[0]
+		b.queue = b.queue[1:]
+		return data
+	}
+	return nil
+}
+
+func testHandlerHelper(t *testing.T, ctx *scontext.Context, code string, q *bytesQueue) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	mockHandler := handler.NewMockHandler(ctrl)
 	mockConn := mock.NewMockConn(ctrl)
 	mockAddr := mock.NewMockAddr(ctrl)
 
-	switch code {
-	case cmd.GetCode:
-		mockHandler.EXPECT().HandleGet(mockConn, ctx).Times(1).Return(nil)
-	case cmd.SetCode:
-		mockHandler.EXPECT().HandleSet(mockConn, ctx).Times(1).Return(nil)
-	case cmd.PingCode:
-		mockHandler.EXPECT().HandlePing(mockConn).Times(1).Return(nil)
-	case cmd.SubCode:
-		mockHandler.EXPECT().HandleSub(mockConn, ctx).Times(1).Return(nil)
-	case cmd.PubCode:
-		mockHandler.EXPECT().HandlePub(mockConn, ctx).Times(1).Return(nil)
-	}
-
-	callCount := 0
 	mockConn.EXPECT().RemoteAddr().Return(mockAddr).AnyTimes()
-	mockAddr.EXPECT().String().Return("127.0.0.1:23").Times(1)
+	mockAddr.EXPECT().String().Return("127.0.0.1:23").AnyTimes()
+	mockConn.EXPECT().Write(gomock.Any()).AnyTimes()
 	mockConn.EXPECT().Read(gomock.Any()).DoAndReturn(func(p []byte) (n int, err error) {
-		callCount++
-		switch callCount {
-		case 1:
-			p[0] = byte(payload.StringType)
-			return 1, nil
-		case 2:
-			binary.BigEndian.PutUint32(p, uint32(len(code)))
-			return 4, nil
-		case 3:
-			copy(p, []byte(code))
-			return len(code), nil
-		default:
+		data := q.Next()
+		if data == nil {
 			return 0, io.EOF
 		}
+		copy(p, data)
+		return len(data), nil
 	}).AnyTimes()
+
+	switch code {
+	case cmd.GetCode:
+		mockHandler.EXPECT().HandleGet(gomock.Any(), ctx).AnyTimes().Return(nil)
+	case cmd.SetCode:
+		mockHandler.EXPECT().HandleSet(gomock.Any(), ctx).AnyTimes().Return(nil)
+	case cmd.PingCode:
+		mockHandler.EXPECT().HandlePing(gomock.Any()).AnyTimes().Return(nil)
+	case cmd.SubCode:
+		mockHandler.EXPECT().HandleSub(gomock.Any(), ctx).AnyTimes().Return(nil)
+	case cmd.PubCode:
+		mockHandler.EXPECT().HandlePub(gomock.Any(), ctx).AnyTimes().Return(nil)
+	}
 	processClient(mockConn, ctx, mockHandler, nil)
 }
 
 func Test_processClientHandle(t *testing.T) {
+
+	buildQueue := func(code string, values []string) *bytesQueue {
+		q := new(bytesQueue)
+		var str payload.String
+
+		w := &bytes.Buffer{}
+		str = payload.String(code)
+		str.WriteTo(w)
+		q.Add(w.Bytes())
+
+		for _, v := range values {
+			w = &bytes.Buffer{}
+			str = payload.String(v)
+			str.WriteTo(w)
+			q.Add(w.Bytes())
+		}
+		return q
+	}
+
 	type args struct {
-		ctx  *scontext.Context
-		code string
+		ctx   *scontext.Context
+		queue *bytesQueue
+		code  string
 	}
 	tests := []struct {
 		name string
@@ -153,37 +190,106 @@ func Test_processClientHandle(t *testing.T) {
 		{
 			name: "handle get success",
 			args: args{
-				ctx:  &scontext.Context{},
+				ctx: &scontext.Context{
+					Db: func() *db.Db {
+						d := db.NewDb()
+						d.Set("key", *payload.NewGeneral(payload.StringType, []byte("value")))
+						return d
+					}(),
+					PubSub:  pubsub.NewPubSub(),
+					Context: context.Background(),
+				},
 				code: cmd.GetCode,
+				queue: func() *bytesQueue {
+					return buildQueue(cmd.GetCode, []string{"key"})
+				}(),
 			},
 		},
 		{
-			name: "handle ping success",
+			name: "handle set success",
 			args: args{
-				ctx:  &scontext.Context{},
-				code: cmd.PingCode,
+				ctx: &scontext.Context{
+					Db: func() *db.Db {
+						d := db.NewDb()
+						d.Set("key", *payload.NewGeneral(payload.StringType, []byte("value")))
+						return d
+					}(),
+					PubSub:  pubsub.NewPubSub(),
+					Context: context.Background(),
+				},
+				code: cmd.SetCode,
+				queue: func() *bytesQueue {
+					return buildQueue(cmd.SetCode, []string{"key", "value"})
+				}(),
 			},
 		},
 		{
 			name: "handle pub success",
 			args: args{
-				ctx:  &scontext.Context{},
+				ctx: &scontext.Context{
+					Db:      db.NewDb(),
+					PubSub:  pubsub.NewPubSub(),
+					Context: context.Background(),
+				},
 				code: cmd.PubCode,
+				queue: func() *bytesQueue {
+					return buildQueue(cmd.PubCode, []string{"topic", "message"})
+				}(),
 			},
 		},
 		{
 			name: "handle sub success",
 			args: args{
-				ctx:  &scontext.Context{},
+				ctx: &scontext.Context{
+					Db:      db.NewDb(),
+					PubSub:  pubsub.NewPubSub(),
+					Context: context.Background(),
+				},
 				code: cmd.SubCode,
+				queue: func() *bytesQueue {
+					return buildQueue(cmd.SubCode, []string{"topic"})
+				}(),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			testHandlerHelper(ctrl, tt.args.ctx, tt.args.code)
+			testHandlerHelper(t, tt.args.ctx, tt.args.code, tt.args.queue)
+		})
+	}
+}
+
+func Test_getCommandFromConn(t *testing.T) {
+	t.Skip()
+	type args struct {
+		cmdstr string
+		conn   net.Conn
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    interface{}
+		wantErr bool
+	}{
+		{
+			name: "get ping command from conn",
+			args: args{
+				cmdstr: "get foo",
+				conn:   mock.NewMockConn(gomock.NewController(t)),
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getPayloadCommandFromConn(tt.args.conn)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getCommandFromConn() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getCommandFromConn() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

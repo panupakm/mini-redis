@@ -54,7 +54,7 @@ func TestPubReadFrom(t *testing.T) {
 				Topic: mintedTopic,
 				Typ:   payload.StringType,
 				Data:  []byte(mintedMsg),
-				Len:   uint64(len(mintedMsg)),
+				Len:   uint32(len(mintedMsg)),
 			},
 		},
 		{
@@ -69,7 +69,7 @@ func TestPubReadFrom(t *testing.T) {
 				Topic: mintedTopic,
 				Typ:   payload.StringType,
 				Data:  []byte(""),
-				Len:   uint64(len("")),
+				Len:   uint32(len("")),
 			},
 		},
 	}
@@ -85,7 +85,7 @@ func TestPub_String(t *testing.T) {
 	type fields struct {
 		Topic string
 		Typ   payload.ValueType
-		Len   uint64
+		Len   uint32
 		Data  []byte
 	}
 	tests := []struct {
@@ -99,7 +99,7 @@ func TestPub_String(t *testing.T) {
 				Topic: "greeting",
 				Typ:   payload.StringType,
 				Data:  []byte("msg"),
-				Len:   uint64(len("msg")),
+				Len:   uint32(len("msg")),
 			},
 			want: fmt.Sprintf("pub topic:greeting"),
 		},
@@ -109,7 +109,7 @@ func TestPub_String(t *testing.T) {
 				Topic: "greeting",
 				Typ:   payload.StringType,
 				Data:  []byte(""),
-				Len:   uint64(len("")),
+				Len:   uint32(len("")),
 			},
 			want: fmt.Sprintf("pub topic:greeting"),
 		},
@@ -154,6 +154,43 @@ func TestPubStringTo(t *testing.T) {
 			err := PubStringTo(w, tt.args.topic, tt.args.msg)
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, w.Bytes())
+		})
+	}
+}
+
+func TestPub_Bytes(t *testing.T) {
+	type fields struct {
+		Topic string
+		Typ   payload.ValueType
+		Len   uint32
+		Data  []byte
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []byte
+	}{
+		{
+			name: "valid topic valid string msg",
+			fields: fields{
+				Topic: "greeting",
+				Typ:   payload.StringType,
+				Data:  []byte("hello world"),
+				Len:   uint32(len("hello world")),
+			},
+			want: makePubPayloadStringWriter("greeting", "hello world"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Pub{
+				Topic: tt.fields.Topic,
+				Typ:   tt.fields.Typ,
+				Len:   tt.fields.Len,
+				Data:  tt.fields.Data,
+			}
+			got := s.Bytes()
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

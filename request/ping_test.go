@@ -78,3 +78,31 @@ func TestPing_String(t *testing.T) {
 		})
 	}
 }
+
+func TestPing_Bytes(t *testing.T) {
+	type fields struct {
+		message string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []byte
+	}{
+		{
+			name: "ping with valid message",
+			fields: fields{
+				message: "PONG",
+			},
+			want: []byte("\x02\x00\x00\x00\x04ping\x02\x00\x00\x00\x04PONG"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Ping{
+				message: tt.fields.message,
+			}
+			got := p.Bytes()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

@@ -1,6 +1,7 @@
 package pubsub
 
 import (
+	"io"
 	"net"
 	"testing"
 
@@ -56,11 +57,11 @@ func TestPubSub_Pub(t *testing.T) {
 
 			mconn := mock.NewMockConn(ctrl)
 			mconn.EXPECT().Write(gomock.Any()).AnyTimes()
-			connmap := map[string][]net.Conn{
+			writermap := map[string][]io.Writer{
 				"topic": {mconn},
 			}
 			ps := &PubSub{
-				connmap: connmap,
+				writermap: writermap,
 			}
 			ps.Pub(tt.args.topic, tt.args.typ, tt.args.buff, tt.args.conn)
 		})
@@ -69,7 +70,7 @@ func TestPubSub_Pub(t *testing.T) {
 
 func TestPubSub_Sub(t *testing.T) {
 	type fields struct {
-		Map map[string][]net.Conn
+		Map map[string][]io.Writer
 	}
 	type args struct {
 		topic string
@@ -83,7 +84,7 @@ func TestPubSub_Sub(t *testing.T) {
 		{
 			name: "sub with topic and string value",
 			fields: fields{
-				Map: make(map[string][]net.Conn),
+				Map: make(map[string][]io.Writer),
 			},
 			args: args{
 				topic: "topic",
@@ -98,7 +99,7 @@ func TestPubSub_Sub(t *testing.T) {
 
 			connMock := mock.NewMockConn(ctrl)
 			ps := &PubSub{
-				connmap: tt.fields.Map,
+				writermap: tt.fields.Map,
 			}
 			ps.Sub(tt.args.topic, connMock)
 			assert.True(t, ps.isSub(tt.args.topic))
@@ -129,7 +130,7 @@ func TestPubSub_Unsub(t *testing.T) {
 			mockconn := mock.NewMockConn(ctrl)
 
 			ps := &PubSub{
-				connmap: map[string][]net.Conn{
+				writermap: map[string][]io.Writer{
 					"topic": {mockconn},
 				},
 			}

@@ -1,6 +1,7 @@
 package request
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 
@@ -25,4 +26,15 @@ func GetReadFrom(r io.Reader) *Get {
 
 func (g *Get) String() string {
 	return fmt.Sprintf("key:%s", g.Key)
+}
+
+func (g *Get) Bytes() []byte {
+	buf := bytes.NewBuffer([]byte{})
+	str := payload.String(GetCode)
+	str.WriteTo(buf)
+
+	str = payload.String(g.Key)
+	str.WriteTo(buf)
+
+	return buf.Bytes()
 }
