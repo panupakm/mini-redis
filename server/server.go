@@ -2,6 +2,7 @@
 package server
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -25,15 +26,17 @@ type Server struct {
 	db         *db.Db
 	ps         *pubsub.PubSub
 	handler    handler.Handler
+	config     *tls.Config
 }
 
-func NewServer(host string, port uint, db *db.Db, ps *pubsub.PubSub) *Server {
+func NewServer(host string, port uint, db *db.Db, ps *pubsub.PubSub, config *tls.Config) *Server {
 	return &Server{
 		host:    host,
 		port:    fmt.Sprint(port),
 		db:      db,
 		ps:      ps,
 		handler: handler.NewHandler(),
+		config:  config,
 	}
 }
 
@@ -42,28 +45,49 @@ func (s *Server) Close() error {
 }
 
 func (s *Server) ListenAndServe() error {
-	listener, err := net.Listen(Protocal, fmt.Sprintf("%s:%s", s.host, s.port))
+
+	listener, err := func() (net.Listener, error) {
+		if s.config == nil {
+			fmt.Printf(("Unsecure listening on %s:%s\n"), s.host, s.port)
+			return net.Listen(Protocal, fmt.Sprintf("%s:%s", s.host, s.port))
+		}
+		fmt.Printf(("Secure listening on %s:%s\n"), s.host, s.port)
+		return tls.Listen(Protocal, fmt.Sprintf("%s:%s", s.host, s.port), s.config)
+	}()
 	s.listener = listener
 	if err != nil {
 		fmt.Println("Error listening:", err.Error())
 		return err
 	}
-
-	fmt.Printf(("Listening on %s:%s\n"), s.host, s.port)
 	fmt.Println("Waiting for client...")
 
-	for {
-		connection, err := s.listener.Accept()
-		if err != nil {
-			fmt.Println("Error accepting:", err.Error())
-			continue
+	disconnect := make(chan net.Conn)
+	go func() {
+		for {
+			connection, err := s.listener.Accept()
+			if err != nil {
+				fmt.Println("Error accepting:", err.Error())
+				continue
+			}
+			fmt.Println("client connected")
+			go processClient(connection, context.NewContext(s.db, s.ps), s.handler, disconnect)
 		}
-		fmt.Println("client connected")
-		go processClient(connection, context.NewContext(s.db, s.ps), s.handler)
+	}()
+
+	for {
+		select {
+		case disconn := <-disconnect:
+			fmt.Println("Deallocating resource for disconnect connection")
+			s.removeConnection(disconn)
+		}
 	}
 }
 
-func processClient(conn net.Conn, ctx *context.Context, handler handler.Handler) {
+func (s *Server) removeConnection(conn net.Conn) {
+	s.ps.Unsub(conn)
+}
+
+func processClient(conn net.Conn, ctx *context.Context, handler handler.Handler, disconnect chan net.Conn) {
 
 	for {
 		var cmdstr payload.String
@@ -89,5 +113,6 @@ func processClient(conn net.Conn, ctx *context.Context, handler handler.Handler)
 			handler.HandlePub(conn, ctx)
 		}
 	}
+	disconnect <- conn
 	fmt.Println("client closed")
 }

@@ -55,7 +55,7 @@ func TestClient_ErrorConnect(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := NewClient()
-			err := c.Connect(tt.args.addr)
+			err := c.Connect(tt.args.addr, nil)
 			assert.Error(t, err)
 		})
 	}
@@ -83,13 +83,13 @@ func TestClient_SuccessConnect(t *testing.T) {
 
 	mockDialer := NewMockDialer(ctrl)
 	mockConn := mock.NewMockConn(ctrl)
-	mockDialer.EXPECT().Dial("tcp", "127.0.0.1:9191").Return(mockConn, nil)
+	mockDialer.EXPECT().Dial("tcp", "127.0.0.1:9191", nil).Return(mockConn, nil)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := Client{
 				dial: mockDialer,
 			}
-			err := c.Connect(tt.args.addr)
+			err := c.Connect(tt.args.addr, nil)
 			assert.NoError(t, err)
 		})
 	}

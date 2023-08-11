@@ -17,7 +17,7 @@ func SetUpServer(t *testing.T, port uint) *server.Server {
 	ps := pubsub.NewPubSub()
 
 	t.Log("Start server...")
-	s := server.NewServer("localhost", port, d, ps)
+	s := server.NewServer("localhost", port, d, ps, nil)
 	go s.ListenAndServe()
 
 	return s
@@ -25,7 +25,7 @@ func SetUpServer(t *testing.T, port uint) *server.Server {
 
 func SetUpClient(t *testing.T, port uint) (*client.Client, func()) {
 	c := client.NewClient()
-	err := c.Connect(fmt.Sprintf("localhost:%d", port))
+	err := c.Connect(fmt.Sprintf("localhost:%d", port), nil)
 	require.NoError(t, err)
 	return c, func() {
 		c.Close()
@@ -38,11 +38,11 @@ func SetUpServerClient(t *testing.T) (*server.Server, *client.Client, func()) {
 	ps := pubsub.NewPubSub()
 
 	t.Log("Start server...")
-	s := server.NewServer("localhost", 9988, d, ps)
+	s := server.NewServer("localhost", 9988, d, ps, nil)
 	go s.ListenAndServe()
 
 	c := client.NewClient()
-	err := c.Connect("localhost:9988")
+	err := c.Connect("localhost:9988", nil)
 	require.NoError(t, err)
 	return s, c, func() {
 		c.Close()

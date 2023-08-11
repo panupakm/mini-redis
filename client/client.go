@@ -2,6 +2,7 @@
 package client
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
 
@@ -11,21 +12,25 @@ import (
 )
 
 type Dialer interface {
-	Dial(network, addr string) (net.Conn, error)
+	Dial(network, addr string, config *tls.Config) (net.Conn, error)
 }
 
 type ImplDialer struct {
 	Dialer
 }
 
-func (_ *ImplDialer) Dial(network, addr string) (net.Conn, error) {
+func (_ *ImplDialer) Dial(network, addr string, config *tls.Config) (net.Conn, error) {
+	if config != nil {
+		return tls.Dial(network, addr, config)
+	}
 	return net.Dial(network, addr)
 }
 
 type Client struct {
-	conn net.Conn
-	addr string
-	dial Dialer
+	conn   net.Conn
+	addr   string
+	dial   Dialer
+	config *tls.Config
 }
 
 type ResultChannel struct {
@@ -43,13 +48,14 @@ func NewClient() *Client {
 	}
 }
 
-func (c *Client) Connect(addr string) error {
-	conn, err := c.dial.Dial(protocal, addr)
+func (c *Client) Connect(addr string, config *tls.Config) error {
+	conn, err := c.dial.Dial(protocal, addr, config)
 	if err != nil {
 		return err
 	}
 	c.conn = conn
 	c.addr = addr
+	c.config = config
 	return nil
 }
 

@@ -2,6 +2,7 @@
 package server
 
 import (
+	"crypto/tls"
 	"encoding/binary"
 	"io"
 	"net"
@@ -51,7 +52,7 @@ func TestNewServer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewServer(tt.args.host, tt.args.port, tt.args.db, tt.args.ps)
+			got := NewServer(tt.args.host, tt.args.port, tt.args.db, tt.args.ps, &tls.Config{})
 			assert.Equal(t, tt.want.host, got.host)
 			assert.Equal(t, tt.want.port, got.port)
 		})
@@ -136,7 +137,7 @@ func testHandlerHelper(ctrl *gomock.Controller, ctx *scontext.Context, code stri
 			return 0, io.EOF
 		}
 	}).AnyTimes()
-	processClient(mockConn, ctx, mockHandler)
+	processClient(mockConn, ctx, mockHandler, nil)
 }
 
 func Test_processClientHandle(t *testing.T) {

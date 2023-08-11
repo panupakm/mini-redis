@@ -101,7 +101,7 @@ func TestPubSub_Sub(t *testing.T) {
 				connmap: tt.fields.Map,
 			}
 			ps.Sub(tt.args.topic, connMock)
-			assert.True(t, ps.IsSub(tt.args.topic))
+			assert.True(t, ps.isSub(tt.args.topic))
 		})
 	}
 }
@@ -133,9 +133,9 @@ func TestPubSub_Unsub(t *testing.T) {
 					"topic": {mockconn},
 				},
 			}
-			assert.True(t, ps.IsSub("topic"))
+			assert.True(t, ps.isSub("topic"))
 			ps.Unsub(mockconn)
-			assert.False(t, ps.IsSub("topic"))
+			assert.False(t, ps.isSub("topic"))
 		})
 	}
 }

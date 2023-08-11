@@ -28,7 +28,7 @@ func (ps *PubSub) Sub(topic string, conn net.Conn) {
 	ps.connmap[topic] = append(ps.connmap[topic], conn)
 }
 
-func (ps *PubSub) IsSub(topic string) bool {
+func (ps *PubSub) isSub(topic string) bool {
 	conns, ok := ps.connmap[topic]
 	return ok && len(conns) > 0
 }
