@@ -27,21 +27,26 @@ type Server struct {
 	ps         *pubsub.PubSub
 	handler    handler.Handler
 	config     *tls.Config
+	closechan  chan struct{}
 }
 
 func NewServer(host string, port uint, db *db.Db, ps *pubsub.PubSub, config *tls.Config) *Server {
 	return &Server{
-		host:    host,
-		port:    fmt.Sprint(port),
-		db:      db,
-		ps:      ps,
-		handler: handler.NewHandler(),
-		config:  config,
+		host:      host,
+		port:      fmt.Sprint(port),
+		db:        db,
+		ps:        ps,
+		handler:   handler.NewHandler(),
+		config:    config,
+		closechan: make(chan struct{}),
 	}
 }
 
 func (s *Server) Close() error {
-	return s.listener.Close()
+
+	err := s.listener.Close()
+	close(s.closechan)
+	return err
 }
 
 func (s *Server) ListenAndServe() error {
@@ -67,7 +72,7 @@ func (s *Server) ListenAndServe() error {
 			connection, err := s.listener.Accept()
 			if err != nil {
 				fmt.Println("Error accepting:", err.Error())
-				continue
+				break
 			}
 			fmt.Println("client connected")
 			go processClient(connection, context.NewContext(s.db, s.ps), s.handler, disconnect)
@@ -79,6 +84,8 @@ func (s *Server) ListenAndServe() error {
 		case disconn := <-disconnect:
 			fmt.Println("Deallocating resource for disconnect connection")
 			s.removeConnection(disconn)
+		case <-s.closechan:
+			break
 		}
 	}
 }
@@ -113,6 +120,8 @@ func processClient(conn net.Conn, ctx *context.Context, handler handler.Handler,
 			handler.HandlePub(conn, ctx)
 		}
 	}
-	disconnect <- conn
+	if disconnect != nil {
+		disconnect <- conn
+	}
 	fmt.Println("client closed")
 }

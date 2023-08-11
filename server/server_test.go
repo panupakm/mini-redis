@@ -85,12 +85,13 @@ func TestServer_Close(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Server{
-				host:     tt.fields.host,
-				port:     tt.fields.port,
-				conn:     tt.fields.conn,
-				listener: tt.fields.listener,
-				db:       tt.fields.db,
-				ps:       tt.fields.ps,
+				host:      tt.fields.host,
+				port:      tt.fields.port,
+				conn:      tt.fields.conn,
+				listener:  tt.fields.listener,
+				db:        tt.fields.db,
+				ps:        tt.fields.ps,
+				closechan: make(chan struct{}),
 			}
 			go s.ListenAndServe()
 			time.Sleep(1 * time.Second)
