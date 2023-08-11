@@ -34,7 +34,7 @@ func (ps *PubSub) Sub(topic string, conn net.Conn) {
 
 func (ps *PubSub) isSub(topic string) bool {
 	ps.mu.RLock()
-	defer ps.mu.Unlock()
+	defer ps.mu.RUnlock()
 	conns, ok := ps.connmap[topic]
 	return ok && len(conns) > 0
 }
