@@ -3,12 +3,14 @@ package pubsub
 import (
 	"fmt"
 	"net"
+	"sync"
 
 	"github.com/panupakm/miniredis/payload"
 )
 
 type PubSub struct {
 	connmap map[string][]net.Conn
+	mu      sync.RWMutex
 }
 
 type PubSuber interface {
@@ -25,15 +27,21 @@ func NewPubSub() *PubSub {
 }
 
 func (ps *PubSub) Sub(topic string, conn net.Conn) {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
 	ps.connmap[topic] = append(ps.connmap[topic], conn)
 }
 
 func (ps *PubSub) isSub(topic string) bool {
+	ps.mu.RLock()
+	defer ps.mu.Unlock()
 	conns, ok := ps.connmap[topic]
 	return ok && len(conns) > 0
 }
 
 func (ps *PubSub) Pub(topic string, typ payload.ValueType, buff []byte, conn net.Conn) {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
 	conns := ps.connmap[topic]
 	for _, con := range conns {
 		if con == conn {
@@ -49,6 +57,8 @@ func (ps *PubSub) Pub(topic string, typ payload.ValueType, buff []byte, conn net
 }
 
 func (ps *PubSub) Unsub(conn net.Conn) {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
 	for topic, conns := range ps.connmap {
 		for i, c := range conns {
 			if c == conn {
