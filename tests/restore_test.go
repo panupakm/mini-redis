@@ -67,7 +67,7 @@ func TestServerRestore(t *testing.T) {
 
 	tempDir, err := os.MkdirTemp(".", "restore-test")
 	require.NoError(t, err)
-	// defer os.RemoveAll(tempDir)
+	defer os.RemoveAll(tempDir)
 
 	const startPort = 9801
 	for _, tt := range tests {
