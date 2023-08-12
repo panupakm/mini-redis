@@ -17,6 +17,7 @@ func main() {
 	addr := flag.String("addr", "localhost", "address to listen on")
 	certPath := flag.String("cert", "", "certificate PEM file")
 	keyPath := flag.String("key", "", "key PEM file")
+	restorePath := flag.String("restore", "", "path to restore from")
 	flag.Parse()
 
 	cert := func() *tls.Certificate {
@@ -30,18 +31,15 @@ func main() {
 		return &cert
 	}()
 
-	var config *server.Config
+	var config = server.Config{}
 	if cert != nil {
-		config = &server.Config{
-			Config: tls.Config{
-				Certificates: []tls.Certificate{*cert},
-			},
+		config.Config = tls.Config{
+			Certificates: []tls.Certificate{*cert},
 		}
-	} else {
-		config = nil
 	}
+	config.PersistentPath = *restorePath
 
-	s := server.NewServer(*addr, *port, db.NewDb(), pubsub.NewPubSub(), config)
+	s := server.NewServer(*addr, *port, db.NewDb(), pubsub.NewPubSub(), &config)
 	fmt.Println("Server started")
 	s.ListenAndServe()
 }
