@@ -41,21 +41,18 @@ type Server struct {
 	conn        net.Conn
 	listener    net.Listener
 	db          *db.Db
-	ps          *pubsub.PubSub
+	pubsub      *pubsub.PubSub
 	handler     handler.Handler
 	config      *Config
 	closechan   chan struct{}
 	persistFile *os.File
 }
 
-func NewServer(host string, port uint, db *db.Db, ps *pubsub.PubSub, config *Config) *Server {
+func NewServer(db *db.Db, ps *pubsub.PubSub) *Server {
 	return &Server{
-		host:      host,
-		port:      fmt.Sprint(port),
 		db:        db,
-		ps:        ps,
+		pubsub:    ps,
 		handler:   handler.NewHandler(),
-		config:    config,
 		closechan: make(chan struct{}),
 	}
 }
@@ -103,21 +100,20 @@ func (s *Server) restoreServer() error {
 		processBytesCommand(readWriter{
 			Reader: bytes.NewReader(buff),
 			Writer: discardWriter,
-		}, context.NewContext(s.db, s.ps), s.handler)
+		}, context.NewContext(s.db, s.pubsub), s.handler)
 	}
 
 	return nil
 }
 
-func (s *Server) ListenAndServe() error {
-
+func (s *Server) ListenAndServe(host string, port uint, config *Config) error {
 	listener, err := func() (net.Listener, error) {
 		if s.config == nil || !s.config.hasCertificates() {
-			fmt.Printf(("Unsecure listening on %s:%s\n"), s.host, s.port)
-			return net.Listen(Protocal, fmt.Sprintf("%s:%s", s.host, s.port))
+			fmt.Printf(("Unsecure listening on %s:%d\n"), host, port)
+			return net.Listen(Protocal, fmt.Sprintf("%s:%d", host, port))
 		}
-		fmt.Printf(("Secure listening on %s:%s\n"), s.host, s.port)
-		return tls.Listen(Protocal, fmt.Sprintf("%s:%s", s.host, s.port), &s.config.Config)
+		fmt.Printf(("Secure listening on %s:%d\n"), host, port)
+		return tls.Listen(Protocal, fmt.Sprintf("%s:%d", host, port), &s.config.Config)
 	}()
 	s.listener = listener
 	if err != nil {
@@ -138,7 +134,7 @@ func (s *Server) ListenAndServe() error {
 				break
 			}
 			fmt.Println("client connected")
-			go processClient(connection, context.NewContext(s.db, s.ps), s.handler, disconnect, change)
+			go processClient(connection, context.NewContext(s.db, s.pubsub), s.handler, disconnect, change)
 		}
 	}()
 
@@ -162,7 +158,7 @@ func (s *Server) ListenAndServe() error {
 }
 
 func (s *Server) removeConnection(conn net.Conn) {
-	s.ps.Unsub(conn)
+	s.pubsub.Unsub(conn)
 }
 
 func getPayloadCommandFromConn(conn net.Conn) ([]byte, error) {

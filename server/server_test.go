@@ -26,10 +26,10 @@ import (
 
 func TestNewServer(t *testing.T) {
 	type args struct {
-		host string
-		port uint
-		db   *db.Db
-		ps   *pubsub.PubSub
+		host   string
+		port   uint
+		db     *db.Db
+		pubsub *pubsub.PubSub
 	}
 	db := db.NewDb()
 	pubsub := pubsub.NewPubSub()
@@ -41,24 +41,20 @@ func TestNewServer(t *testing.T) {
 		{
 			name: "create with localhost url",
 			args: args{
-				host: "localhost",
-				port: 6379,
-				db:   db,
-				ps:   pubsub,
+				db:     db,
+				pubsub: pubsub,
 			},
 			want: &Server{
-				host: "localhost",
-				port: "6379",
-				db:   db,
-				ps:   pubsub,
+				db:     db,
+				pubsub: pubsub,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewServer(tt.args.host, tt.args.port, tt.args.db, tt.args.ps, &Config{})
-			assert.Equal(t, tt.want.host, got.host)
-			assert.Equal(t, tt.want.port, got.port)
+			got := NewServer(tt.args.db, tt.args.pubsub)
+			assert.Equal(t, tt.want.db, got.db)
+			assert.Equal(t, tt.want.pubsub, got.pubsub)
 		})
 	}
 }
@@ -66,7 +62,7 @@ func TestNewServer(t *testing.T) {
 func TestServer_Close(t *testing.T) {
 	type fields struct {
 		host     string
-		port     string
+		port     uint
 		conn     net.Conn
 		listener net.Listener
 		db       *db.Db
@@ -81,7 +77,7 @@ func TestServer_Close(t *testing.T) {
 			name: "close server with connection",
 			fields: fields{
 				host: "localhost",
-				port: "0",
+				port: 0,
 			},
 			wantErr: false,
 		},
@@ -89,15 +85,13 @@ func TestServer_Close(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Server{
-				host:      tt.fields.host,
-				port:      tt.fields.port,
 				conn:      tt.fields.conn,
 				listener:  tt.fields.listener,
 				db:        tt.fields.db,
-				ps:        tt.fields.ps,
+				pubsub:    tt.fields.ps,
 				closechan: make(chan struct{}),
 			}
-			go s.ListenAndServe()
+			go s.ListenAndServe(tt.fields.host, tt.fields.port, nil)
 			time.Sleep(1 * time.Second)
 			err := s.Close()
 			assert.NoError(t, err)

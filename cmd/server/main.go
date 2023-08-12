@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/panupakm/miniredis/internal/db"
-	"github.com/panupakm/miniredis/internal/pubsub"
 	"github.com/panupakm/miniredis/server"
 )
 
@@ -38,8 +36,11 @@ func main() {
 		}
 	}
 	config.PersistentPath = *restorePath
+	fmt.Println(port, addr)
 
-	s := server.NewServer(*addr, *port, db.NewDb(), pubsub.NewPubSub(), &config)
-	fmt.Println("Server started")
-	s.ListenAndServe()
+	// s := server.NewServer(*addr, *port, db.NewDb(), pubsub.NewPubSub(), &config)
+	// fmt.Println("Server started")
+	// s.ListenAndServe()
+	s := InitializeServer()
+	s.ListenAndServe(*addr, *port, &config)
 }
