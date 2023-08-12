@@ -107,6 +107,7 @@ func (s *Server) restoreServer() error {
 }
 
 func (s *Server) ListenAndServe(host string, port uint, config *Config) error {
+	s.config = config
 	listener, err := func() (net.Listener, error) {
 		if s.config == nil || !s.config.hasCertificates() {
 			fmt.Printf(("Unsecure listening on %s:%d\n"), host, port)
