@@ -74,7 +74,7 @@ func (s *Server) restoreServer() error {
 	}
 
 	fmt.Println("Try to restore server state from:", s.config.PersistentPath)
-	f, err := os.OpenFile(s.config.PersistentPath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
+	f, err := os.OpenFile(s.config.PersistentPath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
@@ -111,10 +111,10 @@ func (s *Server) ListenAndServe(host string, port uint, config *Config) error {
 	listener, err := func() (net.Listener, error) {
 		if s.config == nil || !s.config.hasCertificates() {
 			fmt.Printf(("Unsecure listening on %s:%d\n"), host, port)
-			return net.Listen(Protocal, fmt.Sprintf("%s:%d", host, port))
+			return net.Listen(Protocal, net.JoinHostPort(host, fmt.Sprint(port)))
 		}
 		fmt.Printf(("Secure listening on %s:%d\n"), host, port)
-		return tls.Listen(Protocal, fmt.Sprintf("%s:%d", host, port), &s.config.Config)
+		return tls.Listen(Protocal, net.JoinHostPort(host, fmt.Sprint(port)), &s.config.Config)
 	}()
 	s.listener = listener
 	if err != nil {
@@ -182,7 +182,7 @@ func getPayloadCommandFromConn(conn net.Conn) ([]byte, error) {
 	case cmd.PubCode:
 		return cmd.PubReadFrom(conn).Bytes(), nil
 	default:
-		return nil, fmt.Errorf("Unknown command: %s", cmdstr)
+		return nil, fmt.Errorf("unknown command: %s", cmdstr)
 	}
 }
 
