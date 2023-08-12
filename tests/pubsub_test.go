@@ -38,11 +38,11 @@ func TestSub(t *testing.T) {
 
 	port := uint(9990)
 
-	_ = common.SetUpServer(t, port)
+	_ = common.SetUpServer(t, port, nil)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, close := common.SetUpClient(t, port)
-			defer close()
+			c := common.SetUpClient(t, port)
+			defer c.Close()
 
 			_, await, err := c.Sub(tt.args.topic)
 			result := <-await
@@ -79,17 +79,17 @@ func TestPubToExistingTopic(t *testing.T) {
 
 	port := uint(9991)
 
-	server := common.SetUpServer(t, port)
+	server := common.SetUpServer(t, port, nil)
 	defer server.Close()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			csub1, csubclose1 := common.SetUpClient(t, port)
-			defer csubclose1()
-			csub2, csubclose2 := common.SetUpClient(t, port)
-			defer csubclose2()
+			csub1 := common.SetUpClient(t, port)
+			defer csub1.Close()
+			csub2 := common.SetUpClient(t, port)
+			defer csub1.Close()
 
-			cpub, cpubclose := common.SetUpClient(t, port)
-			defer cpubclose()
+			cpub := common.SetUpClient(t, port)
+			defer cpub.Close()
 
 			// two clients subscribing to the same topic
 			subscriber1, await, err := csub1.Sub(tt.args.topic)

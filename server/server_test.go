@@ -4,9 +4,9 @@ package server
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
 	"io"
 	"net"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -16,6 +16,8 @@ import (
 	"github.com/panupakm/miniredis/mock"
 	"github.com/panupakm/miniredis/payload"
 	cmd "github.com/panupakm/miniredis/request"
+
+	// "github.com/panupakm/miniredis/server/context"
 	scontext "github.com/panupakm/miniredis/server/context"
 	"github.com/panupakm/miniredis/server/internal/handler"
 	"github.com/stretchr/testify/assert"
@@ -54,7 +56,7 @@ func TestNewServer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewServer(tt.args.host, tt.args.port, tt.args.db, tt.args.ps, &tls.Config{})
+			got := NewServer(tt.args.host, tt.args.port, tt.args.db, tt.args.ps, &Config{})
 			assert.Equal(t, tt.want.host, got.host)
 			assert.Equal(t, tt.want.port, got.port)
 		})
@@ -155,7 +157,7 @@ func testHandlerHelper(t *testing.T, ctx *scontext.Context, code string, q *byte
 	case cmd.PubCode:
 		mockHandler.EXPECT().HandlePub(gomock.Any(), ctx).AnyTimes().Return(nil)
 	}
-	processClient(mockConn, ctx, mockHandler, nil)
+	processClient(mockConn, ctx, mockHandler, nil, nil)
 }
 
 func Test_processClientHandle(t *testing.T) {
@@ -290,6 +292,54 @@ func Test_getCommandFromConn(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getCommandFromConn() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestServer_restoreServer(t *testing.T) {
+	type fields struct {
+		config *Config
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+	}{
+		{
+			name: "restore server success",
+			fields: fields{
+				config: &Config{
+					PersistentPath: func() string {
+						fileName := "./testdata/test-restore.save"
+						_, err := os.Stat(fileName)
+						if !os.IsNotExist(err) {
+							return fileName
+						}
+
+						fileName = "../testdata/test-restore.save"
+						_, err = os.Stat(fileName)
+						if !os.IsNotExist(err) {
+							return fileName
+						}
+						_, _ = os.CreateTemp(".", "")
+						return ""
+					}(),
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			handler := handler.NewMockHandler(ctrl)
+			handler.EXPECT().HandleSet(gomock.Any(), gomock.Any()).Times(4).Return(nil)
+			s := &Server{
+				handler: handler,
+				config:  tt.fields.config,
+			}
+			s.restoreServer()
 		})
 	}
 }

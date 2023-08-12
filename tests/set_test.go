@@ -28,12 +28,12 @@ func TestSetGet(t *testing.T) {
 		},
 	}
 	port := uint(9989)
-	_ = common.SetUpServer(t, port)
+	_ = common.SetUpServer(t, port, nil)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, close := common.SetUpClient(t, port)
-			defer close()
+			c := common.SetUpClient(t, port)
+			defer c.Close()
 
 			ch, err := c.SetString(tt.args.key, tt.args.value)
 			require.NoError(t, err)

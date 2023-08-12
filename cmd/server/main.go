@@ -30,9 +30,13 @@ func main() {
 		return &cert
 	}()
 
-	var config *tls.Config
+	var config *server.Config
 	if cert != nil {
-		config = &tls.Config{Certificates: []tls.Certificate{*cert}}
+		config = &server.Config{
+			Config: tls.Config{
+				Certificates: []tls.Certificate{*cert},
+			},
+		}
 	} else {
 		config = nil
 	}

@@ -43,11 +43,11 @@ func TestPing(t *testing.T) {
 
 	port := uint(9988)
 
-	_ = common.SetUpServer(t, port)
+	_ = common.SetUpServer(t, port, nil)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, close := common.SetUpClient(t, port)
-			defer close()
+			c := common.SetUpClient(t, port)
+			defer c.Close()
 
 			ch, err := c.Ping(tt.args.msg)
 			require.NoError(t, err)
