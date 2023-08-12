@@ -151,12 +151,13 @@ func configureMockConnResult(code uint16, msg string, ctrl *gomock.Controller) *
 			Length: uint32(len(msg)),
 			Typ:    payload.StringType,
 			Buffer: []byte(msg),
-		}.Bytes()
+		}
+		rsBytes := rsPayload.Bytes()
 		bytes := []byte{byte(payload.ResultType)}
 		lenBytes := make([]byte, 4)
-		binary.BigEndian.PutUint32(lenBytes, uint32(len(rsPayload)))
+		binary.BigEndian.PutUint32(lenBytes, uint32(len(rsBytes)))
 		bytes = append(bytes, lenBytes...)
-		return append(bytes, rsPayload...)
+		return append(bytes, rsBytes...)
 	}()
 
 	mockConn := mock.NewMockConn(ctrl)

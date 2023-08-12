@@ -157,7 +157,6 @@ func (s *Server) ListenAndServe() error {
 				}
 			}
 		case <-s.closechan:
-			break
 		}
 	}
 }

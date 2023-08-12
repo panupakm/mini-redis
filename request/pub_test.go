@@ -2,7 +2,6 @@ package request
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"testing"
 
@@ -101,7 +100,7 @@ func TestPub_String(t *testing.T) {
 				Data:  []byte("msg"),
 				Len:   uint32(len("msg")),
 			},
-			want: fmt.Sprintf("pub topic:greeting"),
+			want: "pub topic:greeting",
 		},
 		{
 			name: "string topic and empty string msg",
@@ -111,7 +110,7 @@ func TestPub_String(t *testing.T) {
 				Data:  []byte(""),
 				Len:   uint32(len("")),
 			},
-			want: fmt.Sprintf("pub topic:greeting"),
+			want: "pub topic:greeting",
 		},
 	}
 	for _, tt := range tests {

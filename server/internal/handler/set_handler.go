@@ -9,11 +9,6 @@ import (
 	"github.com/panupakm/miniredis/server/context"
 )
 
-type Set struct {
-	key   string
-	value []byte
-}
-
 func HandleSet(rw io.ReadWriter, ctx *context.Context) error {
 	pair := cmd.SetReadFrom(rw)
 	db := ctx.Db

@@ -2,7 +2,6 @@ package payload
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"testing"
 
@@ -157,7 +156,7 @@ func TestResult_String(t *testing.T) {
 				Typ:    StringType,
 				Buffer: []byte("hello"),
 			},
-			want: fmt.Sprint("code:0 length:5 type:2"),
+			want: "code:0 length:5 type:2",
 		},
 	}
 	for _, tt := range tests {

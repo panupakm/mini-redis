@@ -8,7 +8,6 @@ import (
 
 	"github.com/panupakm/miniredis/payload"
 	"github.com/panupakm/miniredis/request"
-	cmd "github.com/panupakm/miniredis/request"
 )
 
 type Dialer interface {
@@ -19,7 +18,7 @@ type ImplDialer struct {
 	Dialer
 }
 
-func (_ *ImplDialer) Dial(network, addr string, config *tls.Config) (net.Conn, error) {
+func (*ImplDialer) Dial(network, addr string, config *tls.Config) (net.Conn, error) {
 	if config != nil {
 		return tls.Dial(network, addr, config)
 	}
@@ -68,7 +67,7 @@ func (c *Client) Close() error {
 
 func (c *Client) Ping(msg string) (chan ResultChannel, error) {
 	ch := make(chan ResultChannel)
-	pl := payload.String(cmd.PingCode)
+	pl := payload.String(request.PingCode)
 	var n int64 = 0
 	o, err := pl.WriteTo(c.conn)
 	n += o
@@ -77,8 +76,7 @@ func (c *Client) Ping(msg string) (chan ResultChannel, error) {
 	}
 
 	pl = payload.String(msg)
-	o, err = pl.WriteTo(c.conn)
-	if err != nil {
+	if _, err := pl.WriteTo(c.conn); err != nil {
 		return nil, err
 	}
 
@@ -95,7 +93,7 @@ func (c *Client) Ping(msg string) (chan ResultChannel, error) {
 
 func (c *Client) Sub(topic string) (*Subsriber, chan ResultChannel, error) {
 	ch := make(chan ResultChannel)
-	pl := payload.String(cmd.SubCode)
+	pl := payload.String(request.SubCode)
 	var n int64 = 0
 	o, err := pl.WriteTo(c.conn)
 	n += o
@@ -121,24 +119,18 @@ func (c *Client) Sub(topic string) (*Subsriber, chan ResultChannel, error) {
 }
 
 func (c *Client) SetString(key string, value string) (chan ResultChannel, error) {
-	pl := payload.String(cmd.SetCode)
-	o, err := pl.WriteTo(c.conn)
-	if err != nil {
+	pl := payload.String(request.SetCode)
+	if _, err := pl.WriteTo(c.conn); err != nil {
 		return nil, err
 	}
 
-	var n = int64(o)
 	pl = payload.String(key)
-	o, err = pl.WriteTo(c.conn)
-	if err != nil {
+	if _, err := pl.WriteTo(c.conn); err != nil {
 		return nil, err
 	}
-
-	n += o
 
 	pl = payload.String(value)
-	o, err = pl.WriteTo(c.conn)
-	if err != nil {
+	if _, err := pl.WriteTo(c.conn); err != nil {
 		return nil, err
 	}
 
@@ -151,15 +143,13 @@ func (c *Client) SetString(key string, value string) (chan ResultChannel, error)
 }
 
 func (c *Client) Get(key string) (chan ResultChannel, error) {
-	pl := payload.String(cmd.GetCode)
-	_, err := pl.WriteTo(c.conn)
-	if err != nil {
+	pl := payload.String(request.GetCode)
+	if _, err := pl.WriteTo(c.conn); err != nil {
 		return nil, err
 	}
 
 	pl = payload.String(key)
-	_, err = pl.WriteTo(c.conn)
-	if err != nil {
+	if _, err := pl.WriteTo(c.conn); err != nil {
 		return nil, err
 	}
 
@@ -187,8 +177,7 @@ func (c *Client) PubString(topic string, msg string) (chan ResultChannel, error)
 
 func (c *Client) readResult() (*payload.Result, error) {
 	var result payload.Result
-	_, err := result.ReadFrom(c.conn)
-	if err != nil {
+	if _, err := result.ReadFrom(c.conn); err != nil {
 		return nil, err
 	}
 	return &result, nil

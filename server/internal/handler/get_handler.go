@@ -10,11 +10,6 @@ import (
 	"github.com/panupakm/miniredis/server/context"
 )
 
-type Get struct {
-	key   string
-	value []byte
-}
-
 func HandleGet(rw io.ReadWriter, ctx *context.Context) error {
 	pair := cmd.GetReadFrom(rw)
 

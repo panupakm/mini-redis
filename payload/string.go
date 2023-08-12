@@ -8,8 +8,8 @@ import (
 
 type String string
 
-func (s String) Bytes() []byte {
-	return []byte(s)
+func (s *String) Bytes() []byte {
+	return []byte(*s)
 }
 
 func (s *String) String() string {

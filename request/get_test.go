@@ -39,9 +39,6 @@ func TestGetReadFrom(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			get := GetReadFrom(tt.args.r)
-			if tt.want == nil {
-
-			}
 			assert.Equal(t, tt.want, get)
 		})
 	}

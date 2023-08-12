@@ -42,7 +42,7 @@ func NewResultFromGeneral(g General) *Result {
 	}
 }
 
-func (r Result) Bytes() []byte {
+func (r *Result) Bytes() []byte {
 	var buf bytes.Buffer
 	binary.Write(&buf, binary.BigEndian, r.Code)
 	binary.Write(&buf, binary.BigEndian, r.Length)
@@ -51,11 +51,11 @@ func (r Result) Bytes() []byte {
 	return buf.Bytes()
 }
 
-func (r Result) String() string {
+func (r *Result) String() string {
 	return fmt.Sprintf("code:%v length:%v type:%v", r.Code, r.Length, r.Typ)
 }
 
-func (r Result) WriteTo(w io.Writer) (int64, error) {
+func (r *Result) WriteTo(w io.Writer) (int64, error) {
 	err := binary.Write(w, binary.BigEndian, ResultType)
 	if err != nil {
 		return 0, err
@@ -87,7 +87,9 @@ func (rs *Result) ReadFrom(r io.Reader) (int64, error) {
 	}
 
 	var size uint32
-	err = binary.Read(r, binary.BigEndian, &size)
+	if err := binary.Read(r, binary.BigEndian, &size); err != nil {
+		return n, err
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -96,9 +98,15 @@ func (rs *Result) ReadFrom(r io.Reader) (int64, error) {
 		return n, ErrMaxPayloadSize
 	}
 
-	err = binary.Read(r, binary.BigEndian, &rs.Code)
-	err = binary.Read(r, binary.BigEndian, &rs.Length)
-	err = binary.Read(r, binary.BigEndian, &rs.Typ)
+	if err := binary.Read(r, binary.BigEndian, &rs.Code); err != nil {
+		return n, err
+	}
+	if err := binary.Read(r, binary.BigEndian, &rs.Length); err != nil {
+		return n, err
+	}
+	if err := binary.Read(r, binary.BigEndian, &rs.Typ); err != nil {
+		return n, err
+	}
 	buff := make([]byte, rs.Length)
 	r.Read(buff)
 

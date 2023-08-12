@@ -53,20 +53,24 @@ func PubReadFrom(r io.Reader) *Pub {
 		return nil
 	}
 
-	var len uint32
-	err = binary.Read(r, binary.BigEndian, &len)
-	if err != nil {
+	var size uint32
+	if err := binary.Read(r, binary.BigEndian, &size); err != nil {
 		fmt.Printf("pub error: %s", err)
 		return nil
 	}
 
-	buff := make([]byte, len)
-	_, err = r.Read(buff)
+	buff := make([]byte, size)
+	if size > 0 {
+		if _, err = r.Read(buff); err != nil {
+			fmt.Printf("pub error: %s", err)
+			return nil
+		}
+	}
 
 	return &Pub{
 		Topic: string(topic),
 		Typ:   typ,
-		Len:   uint32(len),
+		Len:   uint32(size),
 		Data:  buff,
 	}
 }

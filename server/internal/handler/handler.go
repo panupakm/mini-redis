@@ -21,22 +21,22 @@ func NewHandler() Handler {
 	return &ImplHandler{}
 }
 
-func (h *ImplHandler) HandleGet(rw io.ReadWriter, ctx *context.Context) error {
+func (*ImplHandler) HandleGet(rw io.ReadWriter, ctx *context.Context) error {
 	return HandleGet(rw, ctx)
 }
 
-func (h *ImplHandler) HandlePing(rw io.ReadWriter) error {
+func (*ImplHandler) HandlePing(rw io.ReadWriter) error {
 	return HandlePing(rw)
 }
 
-func (h *ImplHandler) HandlePub(rw io.ReadWriter, ctx *context.Context) error {
+func (*ImplHandler) HandlePub(rw io.ReadWriter, ctx *context.Context) error {
 	return HandlePub(rw, ctx)
 }
 
-func (h *ImplHandler) HandleSub(rw io.ReadWriter, ctx *context.Context) error {
+func (*ImplHandler) HandleSub(rw io.ReadWriter, ctx *context.Context) error {
 	return HandleSub(rw, ctx)
 }
 
-func (h *ImplHandler) HandleSet(rw io.ReadWriter, ctx *context.Context) error {
+func (*ImplHandler) HandleSet(rw io.ReadWriter, ctx *context.Context) error {
 	return HandleSet(rw, ctx)
 }
