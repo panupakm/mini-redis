@@ -94,15 +94,13 @@ func (c *Client) Ping(msg string) (chan ResultChannel, error) {
 func (c *Client) Sub(topic string) (*Subsriber, chan ResultChannel, error) {
 	ch := make(chan ResultChannel)
 	pl := payload.String(request.SubCode)
-	var n int64 = 0
-	o, err := pl.WriteTo(c.conn)
-	n += o
+	_, err := pl.WriteTo(c.conn)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	pl = payload.String(topic)
-	o, err = pl.WriteTo(c.conn)
+	_, err = pl.WriteTo(c.conn)
 	if err != nil {
 		return nil, nil, err
 	}

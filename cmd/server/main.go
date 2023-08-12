@@ -33,14 +33,12 @@ func main() {
 	if cert != nil {
 		config.Config = tls.Config{
 			Certificates: []tls.Certificate{*cert},
+			MinVersion:   tls.VersionTLS13,
 		}
 	}
 	config.PersistentPath = *restorePath
 	fmt.Println(port, addr)
 
-	// s := server.NewServer(*addr, *port, db.NewDb(), pubsub.NewPubSub(), &config)
-	// fmt.Println("Server started")
-	// s.ListenAndServe()
 	s := InitializeServer()
 	s.ListenAndServe(*addr, *port, &config)
 }

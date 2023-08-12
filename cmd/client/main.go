@@ -30,7 +30,7 @@ func main() {
 				log.Fatalf("unable to parse cert from %s", *certPath)
 			}
 			fmt.Println("Create certificate")
-			return &tls.Config{RootCAs: certPool}
+			return &tls.Config{RootCAs: certPool, MinVersion: tls.VersionTLS13}
 		}
 		return nil
 	}()
