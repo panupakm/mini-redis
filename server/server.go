@@ -37,7 +37,6 @@ func (c *Config) hasCertificates() bool {
 }
 
 type Server struct {
-	host, port  string
 	conn        net.Conn
 	listener    net.Listener
 	db          *db.Db
