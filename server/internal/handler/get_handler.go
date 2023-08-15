@@ -13,8 +13,8 @@ import (
 func HandleGet(rw io.ReadWriter, ctx *context.Context) error {
 	pair := cmd.GetReadFrom(rw)
 
-	db := ctx.Db
-	v, err := db.Get(pair.Key)
+	storage := ctx.Storage
+	v, err := storage.Get(pair.Key)
 	if err != nil {
 		fmt.Println("Error set:", err.Error())
 		r := payload.NewErrResult(payload.StringType, []byte(err.Error()))

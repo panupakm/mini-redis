@@ -3,20 +3,20 @@ package context
 import (
 	"context"
 
-	"github.com/panupakm/miniredis/internal/db"
-	"github.com/panupakm/miniredis/internal/pubsub"
+	"github.com/panupakm/miniredis/server/pubsub"
+	"github.com/panupakm/miniredis/server/storage"
 )
 
 type Context struct {
 	context.Context
-	Db     *db.Db
-	PubSub *pubsub.PubSub
+	Storage storage.Storage
+	PubSub  *pubsub.PubSub
 }
 
-func NewContext(db *db.Db, ps *pubsub.PubSub) *Context {
+func NewContext(storage storage.Storage, ps *pubsub.PubSub) *Context {
 	return &Context{
 		Context: context.Background(),
-		Db:      db,
+		Storage: storage,
 		PubSub:  ps,
 	}
 }

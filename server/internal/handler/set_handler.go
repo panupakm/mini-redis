@@ -11,8 +11,8 @@ import (
 
 func HandleSet(rw io.ReadWriter, ctx *context.Context) error {
 	pair := cmd.SetReadFrom(rw)
-	db := ctx.Db
-	err := db.Set(pair.Key, *payload.NewGeneral(payload.StringType, pair.Value))
+	storage := ctx.Storage
+	err := storage.Set(pair.Key, *payload.NewGeneral(payload.StringType, pair.Value))
 	if err != nil {
 		fmt.Println("Error set:", err.Error())
 		payload.NewErrResult(payload.StringType, []byte(err.Error()))

@@ -1,8 +1,8 @@
 test-cov:
 	gocov test \
 		github.com/panupakm/miniredis/client \
-		github.com/panupakm/miniredis/internal/db \
-		github.com/panupakm/miniredis/internal/pubsub \
+		github.com/panupakm/miniredis/server/storage \
+		github.com/panupakm/miniredis/server/pubsub \
 		github.com/panupakm/miniredis/payload \
 		github.com/panupakm/miniredis/request \
 		github.com/panupakm/miniredis/server \
@@ -12,8 +12,8 @@ test-cov:
 test-cov-html:
 	go test -coverprofile coverage-html.out \
 		github.com/panupakm/miniredis/client \
-		github.com/panupakm/miniredis/internal/db \
-		github.com/panupakm/miniredis/internal/pubsub \
+		github.com/panupakm/miniredis/server/storage \
+		github.com/panupakm/miniredis/server/pubsub \
 		github.com/panupakm/miniredis/payload \
 		github.com/panupakm/miniredis/request \
 		github.com/panupakm/miniredis/server \

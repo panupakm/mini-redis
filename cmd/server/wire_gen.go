@@ -7,16 +7,16 @@
 package main
 
 import (
-	"github.com/panupakm/miniredis/internal/db"
-	"github.com/panupakm/miniredis/internal/pubsub"
 	"github.com/panupakm/miniredis/server"
+	"github.com/panupakm/miniredis/server/pubsub"
+	"github.com/panupakm/miniredis/server/storage"
 )
 
 // Injectors from wire.go:
 
 func InitializeServer() *server.Server {
-	dbDb := db.NewDb()
+	storageStorage := storage.NewDefaultStorage()
 	pubSub := pubsub.NewPubSub()
-	serverServer := server.NewServer(dbDb, pubSub)
+	serverServer := server.NewServer(storageStorage, pubSub)
 	return serverServer
 }

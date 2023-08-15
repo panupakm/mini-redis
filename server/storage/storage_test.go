@@ -1,28 +1,27 @@
 // Package db provides functions for interacting with a database.
-package db
+package storage
 
 import (
 	"testing"
 
 	"github.com/panupakm/miniredis/payload"
+	"github.com/panupakm/miniredis/server/storage/internal"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewDb(t *testing.T) {
 	tests := []struct {
 		name string
-		want *Db
+		want Storage
 	}{
 		{
 			name: "new DB",
-			want: &Db{
-				pairs: make(map[string]payload.General),
-			},
+			want: internal.NewStorage(),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewDb()
+			got := NewDefaultStorage()
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -55,12 +54,12 @@ func TestDb_Set(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			db := &Db{
-				pairs: tt.fields.pairs,
-			}
+			db := internal.NewStorageWithPair(tt.fields.pairs)
 			err := db.Set(tt.args.key, tt.args.value)
 			assert.NoError(t, err)
-			assert.Equal(t, tt.args.value, db.pairs[tt.args.key])
+
+			v, err := db.Get(tt.args.key)
+			assert.Equal(t, tt.args.value, v)
 		})
 	}
 }
@@ -94,9 +93,7 @@ func TestDb_Get(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			db := &Db{
-				pairs: tt.fields.pairs,
-			}
+			db := internal.NewStorageWithPair(tt.fields.pairs)
 			got, err := db.Get(tt.args.key)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want, got)

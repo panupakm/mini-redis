@@ -11,27 +11,27 @@ import (
 	"testing"
 	"time"
 
-	"github.com/panupakm/miniredis/internal/db"
-	"github.com/panupakm/miniredis/internal/pubsub"
 	"github.com/panupakm/miniredis/mock"
 	"github.com/panupakm/miniredis/payload"
 	cmd "github.com/panupakm/miniredis/request"
+	"github.com/panupakm/miniredis/server/pubsub"
 
 	// "github.com/panupakm/miniredis/server/context"
 	scontext "github.com/panupakm/miniredis/server/context"
 	"github.com/panupakm/miniredis/server/internal/handler"
+	"github.com/panupakm/miniredis/server/storage"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
 func TestNewServer(t *testing.T) {
 	type args struct {
-		host   string
-		port   uint
-		db     *db.Db
-		pubsub *pubsub.PubSub
+		host    string
+		port    uint
+		storage storage.Storage
+		pubsub  *pubsub.PubSub
 	}
-	db := db.NewDb()
+	storage := storage.NewDefaultStorage()
 	pubsub := pubsub.NewPubSub()
 	tests := []struct {
 		name string
@@ -41,19 +41,19 @@ func TestNewServer(t *testing.T) {
 		{
 			name: "create with localhost url",
 			args: args{
-				db:     db,
-				pubsub: pubsub,
+				storage: storage,
+				pubsub:  pubsub,
 			},
 			want: &Server{
-				db:     db,
-				pubsub: pubsub,
+				storage: storage,
+				pubsub:  pubsub,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewServer(tt.args.db, tt.args.pubsub)
-			assert.Equal(t, tt.want.db, got.db)
+			got := NewServer(tt.args.storage, tt.args.pubsub)
+			assert.Equal(t, tt.want.storage, got.storage)
 			assert.Equal(t, tt.want.pubsub, got.pubsub)
 		})
 	}
@@ -65,7 +65,7 @@ func TestServer_Close(t *testing.T) {
 		port     uint
 		conn     net.Conn
 		listener net.Listener
-		db       *db.Db
+		storage  storage.Storage
 		ps       *pubsub.PubSub
 	}
 	tests := []struct {
@@ -87,7 +87,7 @@ func TestServer_Close(t *testing.T) {
 			s := &Server{
 				conn:      tt.fields.conn,
 				listener:  tt.fields.listener,
-				db:        tt.fields.db,
+				storage:   tt.fields.storage,
 				pubsub:    tt.fields.ps,
 				closechan: make(chan struct{}),
 			}
@@ -187,10 +187,10 @@ func Test_processClientHandle(t *testing.T) {
 			name: "handle get success",
 			args: args{
 				ctx: &scontext.Context{
-					Db: func() *db.Db {
-						d := db.NewDb()
-						d.Set("key", *payload.NewGeneral(payload.StringType, []byte("value")))
-						return d
+					Storage: func() storage.Storage {
+						s := storage.NewDefaultStorage()
+						s.Set("key", *payload.NewGeneral(payload.StringType, []byte("value")))
+						return s
 					}(),
 					PubSub:  pubsub.NewPubSub(),
 					Context: context.Background(),
@@ -205,10 +205,10 @@ func Test_processClientHandle(t *testing.T) {
 			name: "handle set success",
 			args: args{
 				ctx: &scontext.Context{
-					Db: func() *db.Db {
-						d := db.NewDb()
-						d.Set("key", *payload.NewGeneral(payload.StringType, []byte("value")))
-						return d
+					Storage: func() storage.Storage {
+						s := storage.NewDefaultStorage()
+						s.Set("key", *payload.NewGeneral(payload.StringType, []byte("value")))
+						return s
 					}(),
 					PubSub:  pubsub.NewPubSub(),
 					Context: context.Background(),
@@ -223,7 +223,7 @@ func Test_processClientHandle(t *testing.T) {
 			name: "handle pub success",
 			args: args{
 				ctx: &scontext.Context{
-					Db:      db.NewDb(),
+					Storage: storage.NewDefaultStorage(),
 					PubSub:  pubsub.NewPubSub(),
 					Context: context.Background(),
 				},
@@ -237,7 +237,7 @@ func Test_processClientHandle(t *testing.T) {
 			name: "handle sub success",
 			args: args{
 				ctx: &scontext.Context{
-					Db:      db.NewDb(),
+					Storage: storage.NewDefaultStorage(),
 					PubSub:  pubsub.NewPubSub(),
 					Context: context.Background(),
 				},

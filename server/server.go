@@ -10,12 +10,12 @@ import (
 	"net"
 	"os"
 
-	"github.com/panupakm/miniredis/internal/db"
-	"github.com/panupakm/miniredis/internal/pubsub"
 	"github.com/panupakm/miniredis/payload"
 	cmd "github.com/panupakm/miniredis/request"
 	"github.com/panupakm/miniredis/server/context"
 	"github.com/panupakm/miniredis/server/internal/handler"
+	"github.com/panupakm/miniredis/server/pubsub"
+	"github.com/panupakm/miniredis/server/storage"
 )
 
 const (
@@ -39,7 +39,7 @@ func (c *Config) hasCertificates() bool {
 type Server struct {
 	conn        net.Conn
 	listener    net.Listener
-	db          *db.Db
+	storage     storage.Storage
 	pubsub      *pubsub.PubSub
 	handler     handler.Handler
 	config      *Config
@@ -47,9 +47,9 @@ type Server struct {
 	persistFile *os.File
 }
 
-func NewServer(db *db.Db, ps *pubsub.PubSub) *Server {
+func NewServer(db storage.Storage, ps *pubsub.PubSub) *Server {
 	return &Server{
-		db:        db,
+		storage:   db,
 		pubsub:    ps,
 		handler:   handler.NewHandler(),
 		closechan: make(chan struct{}),
@@ -99,7 +99,7 @@ func (s *Server) restoreServer() error {
 		processBytesCommand(readWriter{
 			Reader: bytes.NewReader(buff),
 			Writer: discardWriter,
-		}, context.NewContext(s.db, s.pubsub), s.handler)
+		}, context.NewContext(s.storage, s.pubsub), s.handler)
 	}
 
 	return nil
@@ -134,7 +134,7 @@ func (s *Server) ListenAndServe(host string, port uint, config *Config) error {
 				break
 			}
 			fmt.Println("client connected")
-			go processClient(connection, context.NewContext(s.db, s.pubsub), s.handler, disconnect, change)
+			go processClient(connection, context.NewContext(s.storage, s.pubsub), s.handler, disconnect, change)
 		}
 	}()
 

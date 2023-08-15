@@ -7,12 +7,12 @@ package main
 
 import (
 	"github.com/google/wire"
-	"github.com/panupakm/miniredis/internal/db"
-	"github.com/panupakm/miniredis/internal/pubsub"
 	"github.com/panupakm/miniredis/server"
+	"github.com/panupakm/miniredis/server/pubsub"
+	"github.com/panupakm/miniredis/server/storage"
 )
 
 func InitializeServer() *server.Server {
-	wire.Build(server.NewServer, db.NewDb, pubsub.NewPubSub)
+	wire.Build(server.NewServer, storage.NewDefaultStorage, pubsub.NewPubSub)
 	return &server.Server{}
 }
