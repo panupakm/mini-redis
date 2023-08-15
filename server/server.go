@@ -40,14 +40,14 @@ type Server struct {
 	conn        net.Conn
 	listener    net.Listener
 	storage     storage.Storage
-	pubsub      *pubsub.PubSub
+	pubsub      pubsub.PubSub
 	handler     handler.Handler
 	config      *Config
 	closechan   chan struct{}
 	persistFile *os.File
 }
 
-func NewServer(db storage.Storage, ps *pubsub.PubSub) *Server {
+func NewServer(db storage.Storage, ps pubsub.PubSub) *Server {
 	return &Server{
 		storage:   db,
 		pubsub:    ps,

@@ -10,10 +10,10 @@ import (
 type Context struct {
 	context.Context
 	Storage storage.Storage
-	PubSub  *pubsub.PubSub
+	PubSub  pubsub.PubSub
 }
 
-func NewContext(storage storage.Storage, ps *pubsub.PubSub) *Context {
+func NewContext(storage storage.Storage, ps pubsub.PubSub) *Context {
 	return &Context{
 		Context: context.Background(),
 		Storage: storage,

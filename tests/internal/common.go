@@ -14,7 +14,7 @@ import (
 func SetUpServer(t *testing.T, port uint, config *server.Config) *server.Server {
 
 	d := storage.NewDefaultStorage()
-	ps := pubsub.NewPubSub()
+	ps := pubsub.NewDefaultPubSub()
 
 	t.Log("Start server...")
 	s := server.NewServer(d, ps)
@@ -33,7 +33,7 @@ func SetUpClient(t *testing.T, port uint) *client.Client {
 func SetUpServerClient(t *testing.T) (*server.Server, *client.Client, func()) {
 
 	d := storage.NewDefaultStorage()
-	ps := pubsub.NewPubSub()
+	ps := pubsub.NewDefaultPubSub()
 
 	t.Log("Start server...")
 	s := server.NewServer(d, ps)

@@ -29,10 +29,10 @@ func TestNewServer(t *testing.T) {
 		host    string
 		port    uint
 		storage storage.Storage
-		pubsub  *pubsub.PubSub
+		pubsub  pubsub.PubSub
 	}
 	storage := storage.NewDefaultStorage()
-	pubsub := pubsub.NewPubSub()
+	pubsub := pubsub.NewDefaultPubSub()
 	tests := []struct {
 		name string
 		args args
@@ -66,7 +66,7 @@ func TestServer_Close(t *testing.T) {
 		conn     net.Conn
 		listener net.Listener
 		storage  storage.Storage
-		ps       *pubsub.PubSub
+		ps       pubsub.PubSub
 	}
 	tests := []struct {
 		name    string
@@ -192,7 +192,7 @@ func Test_processClientHandle(t *testing.T) {
 						s.Set("key", *payload.NewGeneral(payload.StringType, []byte("value")))
 						return s
 					}(),
-					PubSub:  pubsub.NewPubSub(),
+					PubSub:  pubsub.NewDefaultPubSub(),
 					Context: context.Background(),
 				},
 				code: cmd.GetCode,
@@ -210,7 +210,7 @@ func Test_processClientHandle(t *testing.T) {
 						s.Set("key", *payload.NewGeneral(payload.StringType, []byte("value")))
 						return s
 					}(),
-					PubSub:  pubsub.NewPubSub(),
+					PubSub:  pubsub.NewDefaultPubSub(),
 					Context: context.Background(),
 				},
 				code: cmd.SetCode,
@@ -224,7 +224,7 @@ func Test_processClientHandle(t *testing.T) {
 			args: args{
 				ctx: &scontext.Context{
 					Storage: storage.NewDefaultStorage(),
-					PubSub:  pubsub.NewPubSub(),
+					PubSub:  pubsub.NewDefaultPubSub(),
 					Context: context.Background(),
 				},
 				code: cmd.PubCode,
@@ -238,7 +238,7 @@ func Test_processClientHandle(t *testing.T) {
 			args: args{
 				ctx: &scontext.Context{
 					Storage: storage.NewDefaultStorage(),
-					PubSub:  pubsub.NewPubSub(),
+					PubSub:  pubsub.NewDefaultPubSub(),
 					Context: context.Background(),
 				},
 				code: cmd.SubCode,

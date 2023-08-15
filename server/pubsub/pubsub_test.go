@@ -7,6 +7,7 @@ import (
 
 	"github.com/panupakm/miniredis/mock"
 	"github.com/panupakm/miniredis/payload"
+	"github.com/panupakm/miniredis/server/pubsub/internal"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -14,17 +15,17 @@ import (
 func TestNewPubSub(t *testing.T) {
 	tests := []struct {
 		name string
-		want *PubSub
+		want PubSub
 	}{
 		{
 			name: "new pubsub",
-			want: &PubSub{},
+			want: NewDefaultPubSub(),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewPubSub()
-			assert.IsType(t, &PubSub{}, got)
+			got := NewDefaultPubSub()
+			assert.IsType(t, NewDefaultPubSub(), got)
 		})
 	}
 }
@@ -60,9 +61,7 @@ func TestPubSub_Pub(t *testing.T) {
 			writermap := map[string][]io.Writer{
 				"topic": {mconn},
 			}
-			ps := &PubSub{
-				writermap: writermap,
-			}
+			ps := internal.NewPubSubWithWriterMap(writermap)
 			ps.Pub(tt.args.topic, tt.args.typ, tt.args.buff, tt.args.conn)
 		})
 	}
@@ -98,11 +97,9 @@ func TestPubSub_Sub(t *testing.T) {
 			defer ctrl.Finish()
 
 			connMock := mock.NewMockConn(ctrl)
-			ps := &PubSub{
-				writermap: tt.fields.Map,
-			}
+			ps := internal.NewPubSubWithWriterMap(tt.fields.Map)
 			ps.Sub(tt.args.topic, connMock)
-			assert.True(t, ps.isSub(tt.args.topic))
+			assert.True(t, ps.IsSub(tt.args.topic))
 		})
 	}
 }
@@ -129,14 +126,12 @@ func TestPubSub_Unsub(t *testing.T) {
 			defer ctrl.Finish()
 			mockconn := mock.NewMockConn(ctrl)
 
-			ps := &PubSub{
-				writermap: map[string][]io.Writer{
-					"topic": {mockconn},
-				},
-			}
-			assert.True(t, ps.isSub("topic"))
+			ps := internal.NewPubSubWithWriterMap(map[string][]io.Writer{
+				"topic": {mockconn},
+			})
+			assert.True(t, ps.IsSub("topic"))
 			ps.Unsub(mockconn)
-			assert.False(t, ps.isSub("topic"))
+			assert.False(t, ps.IsSub("topic"))
 		})
 	}
 }

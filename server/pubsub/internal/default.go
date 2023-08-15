@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/panupakm/miniredis/payload"
-	"github.com/panupakm/miniredis/server/pubsub"
 )
 
 type DefaultPubSub struct {
@@ -14,9 +13,15 @@ type DefaultPubSub struct {
 	mu        sync.RWMutex
 }
 
-func NewPubSub() pubsub.PubSub {
+func NewPubSub() *DefaultPubSub {
 	return &DefaultPubSub{
 		writermap: make(map[string][]io.Writer),
+	}
+}
+
+func NewPubSubWithWriterMap(writermap map[string][]io.Writer) *DefaultPubSub {
+	return &DefaultPubSub{
+		writermap: writermap,
 	}
 }
 
@@ -26,7 +31,7 @@ func (ps *DefaultPubSub) Sub(topic string, w io.Writer) {
 	ps.writermap[topic] = append(ps.writermap[topic], w)
 }
 
-func (ps *DefaultPubSub) isSub(topic string) bool {
+func (ps *DefaultPubSub) IsSub(topic string) bool {
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
 	conns, ok := ps.writermap[topic]
