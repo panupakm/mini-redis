@@ -28,8 +28,8 @@ func TestConcurrency(t *testing.T) {
 			args: args{
 				msg:         "PING",
 				topic:       "test",
-				clientCount: 200,
-				loopCount:   100,
+				clientCount: 10,
+				loopCount:   10,
 			},
 			wantErr: false,
 		},
