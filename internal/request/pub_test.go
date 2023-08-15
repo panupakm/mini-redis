@@ -5,7 +5,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/panupakm/miniredis/payload"
+	"github.com/panupakm/miniredis/internal/payload"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

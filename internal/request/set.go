@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/panupakm/miniredis/payload"
+	"github.com/panupakm/miniredis/internal/payload"
 )
 
 type Set struct {

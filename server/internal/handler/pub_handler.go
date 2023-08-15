@@ -3,8 +3,8 @@ package handler
 import (
 	"io"
 
-	"github.com/panupakm/miniredis/payload"
-	cmd "github.com/panupakm/miniredis/request"
+	"github.com/panupakm/miniredis/internal/payload"
+	cmd "github.com/panupakm/miniredis/internal/request"
 	"github.com/panupakm/miniredis/server/context"
 )
 

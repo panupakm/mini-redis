@@ -2,3 +2,4 @@ coverage.out
 coverage.json
 coverage-html.out
 *.out
+bin

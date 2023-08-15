@@ -10,8 +10,8 @@ import (
 	"net"
 	"os"
 
-	"github.com/panupakm/miniredis/payload"
-	cmd "github.com/panupakm/miniredis/request"
+	"github.com/panupakm/miniredis/internal/payload"
+	cmd "github.com/panupakm/miniredis/internal/request"
 	"github.com/panupakm/miniredis/server/context"
 	"github.com/panupakm/miniredis/server/internal/handler"
 	"github.com/panupakm/miniredis/server/pubsub"

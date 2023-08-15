@@ -5,7 +5,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/panupakm/miniredis/payload"
+	"github.com/panupakm/miniredis/internal/payload"
 )
 
 type DefaultPubSub struct {

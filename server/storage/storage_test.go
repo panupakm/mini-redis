@@ -4,7 +4,7 @@ package storage
 import (
 	"testing"
 
-	"github.com/panupakm/miniredis/payload"
+	"github.com/panupakm/miniredis/internal/payload"
 	"github.com/panupakm/miniredis/server/storage/internal"
 	"github.com/stretchr/testify/assert"
 )

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/panupakm/miniredis/payload"
-	"github.com/panupakm/miniredis/request"
+	"github.com/panupakm/miniredis/internal/payload"
+	"github.com/panupakm/miniredis/internal/request"
 )
 
 type Dialer interface {

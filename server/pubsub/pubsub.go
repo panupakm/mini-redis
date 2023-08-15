@@ -3,7 +3,7 @@ package pubsub
 import (
 	"io"
 
-	"github.com/panupakm/miniredis/payload"
+	"github.com/panupakm/miniredis/internal/payload"
 	"github.com/panupakm/miniredis/server/pubsub/internal"
 )
 

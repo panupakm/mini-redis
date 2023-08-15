@@ -3,8 +3,8 @@ test-cov:
 		github.com/panupakm/miniredis/client \
 		github.com/panupakm/miniredis/server/storage \
 		github.com/panupakm/miniredis/server/pubsub \
-		github.com/panupakm/miniredis/payload \
-		github.com/panupakm/miniredis/request \
+		github.com/panupakm/miniredis/internal/payload \
+		github.com/panupakm/miniredis/internal/request \
 		github.com/panupakm/miniredis/server \
 		github.com/panupakm/miniredis/server/internal/handler \
 		| gocov report
@@ -14,8 +14,8 @@ test-cov-html:
 		github.com/panupakm/miniredis/client \
 		github.com/panupakm/miniredis/server/storage \
 		github.com/panupakm/miniredis/server/pubsub \
-		github.com/panupakm/miniredis/payload \
-		github.com/panupakm/miniredis/request \
+		github.com/panupakm/miniredis/internal/payload \
+		github.com/panupakm/miniredis/internal/request \
 		github.com/panupakm/miniredis/server \
 		github.com/panupakm/miniredis/server/internal/handler
 	go tool cover -html=coverage-html.out

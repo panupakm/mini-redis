@@ -4,8 +4,8 @@ import (
 	"encoding/binary"
 	"testing"
 
-	"github.com/panupakm/miniredis/mock"
-	"github.com/panupakm/miniredis/payload"
+	"github.com/panupakm/miniredis/internal/mock"
+	"github.com/panupakm/miniredis/internal/payload"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
