@@ -4,7 +4,6 @@ package main
 import (
 	"crypto/tls"
 	"flag"
-	"fmt"
 	"log"
 
 	"github.com/panupakm/miniredis/server"
@@ -37,7 +36,6 @@ func main() {
 		}
 	}
 	config.PersistentPath = *restorePath
-	fmt.Println(port, addr)
 
 	s := InitializeServer()
 	s.ListenAndServe(*addr, *port, &config)

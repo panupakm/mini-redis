@@ -13,6 +13,6 @@ import (
 )
 
 func InitializeServer() *server.Server {
-	wire.Build(server.NewServer, storage.NewDefaultStorage, pubsub.NewPubSub)
+	wire.Build(server.NewServer, storage.NewDefaultStorage, pubsub.NewDefaultPubSub)
 	return &server.Server{}
 }

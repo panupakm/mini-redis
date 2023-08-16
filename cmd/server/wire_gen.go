@@ -16,7 +16,7 @@ import (
 
 func InitializeServer() *server.Server {
 	storageStorage := storage.NewDefaultStorage()
-	pubSub := pubsub.NewPubSub()
+	pubSub := pubsub.NewDefaultPubSub()
 	serverServer := server.NewServer(storageStorage, pubSub)
 	return serverServer
 }

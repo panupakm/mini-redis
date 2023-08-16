@@ -37,22 +37,22 @@ func (c *Config) hasCertificates() bool {
 }
 
 type Server struct {
-	conn        net.Conn
-	listener    net.Listener
-	storage     storage.Storage
-	pubsub      pubsub.PubSub
-	handler     handler.Handler
-	config      *Config
-	closechan   chan struct{}
-	persistFile *os.File
+	conn         net.Conn
+	listener     net.Listener
+	storage      storage.Storage
+	pubsub       pubsub.PubSub
+	handler      handler.Handler
+	config       *Config
+	shutdownchan chan struct{}
+	persistFile  *os.File
 }
 
 func NewServer(db storage.Storage, ps pubsub.PubSub) *Server {
 	return &Server{
-		storage:   db,
-		pubsub:    ps,
-		handler:   handler.NewHandler(),
-		closechan: make(chan struct{}),
+		storage:      db,
+		pubsub:       ps,
+		handler:      handler.NewHandler(),
+		shutdownchan: make(chan struct{}),
 	}
 }
 
@@ -61,7 +61,7 @@ func (s *Server) Close() error {
 		s.persistFile.Close()
 	}
 	err := s.listener.Close()
-	close(s.closechan)
+	close(s.shutdownchan)
 
 	return err
 }
@@ -152,7 +152,8 @@ func (s *Server) ListenAndServe(host string, port uint, config *Config) error {
 					fmt.Println("Error writing to file:", err.Error())
 				}
 			}
-		case <-s.closechan:
+		case <-s.shutdownchan:
+			break
 		}
 	}
 }
